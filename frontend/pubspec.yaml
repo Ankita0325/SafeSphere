@@ -1,0 +1,66 @@
+name: women_safety_app
+description: Women Safety Application with AI and Emergency Features
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+   
+  # Firebase
+  firebase_core: ^3.9.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.0
+  firebase_storage: ^12.0.0
+   
+  # Maps & Location
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.0
+  geolocator: ^11.0.0
+  geocoding: ^3.0.0
+   
+  # Voice & AI
+  speech_to_text: ^7.0.0
+   
+  # HTTP
+  http: ^1.2.0
+  connectivity_plus: ^6.0.0
+
+  # State Management
+  provider: ^6.1.0
+
+  # UI
+  google_fonts: ^6.2.0
+  font_awesome_flutter: ^10.8.0
+  cupertino_icons: ^1.0.6
+
+  # Permissions
+  permission_handler: ^11.3.0
+  url_launcher: ^6.2.0
+  shared_preferences: ^2.3.0
+
+  # Utilities
+  intl: ^0.19.0
+  image_picker: ^1.1.0
+  path_provider: ^2.1.0
+  flutter_secure_storage: ^9.2.0
+
+  # Additional
+  vibration: ^3.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+   
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+    - assets/sounds/
