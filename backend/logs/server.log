@@ -1,0 +1,25 @@
+C:\install IS\Python310\lib\site-packages\google\api_core\_python_version_support.py:275: FutureWarning: You are using a Python version (3.10.8) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2026-10-04). Please upgrade to the latest Python version, or at least Python 3.11, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+D:\project\women_safety_app\backend\app\services\ai_service.py:1: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+2026-07-09 23:36:14,236 - app.services.firebase_service - WARNING - Firebase credentials not found at firebase/serviceAccountKey.json. Running in SQLite Mock mode.
+2026-07-09 23:36:14,239 - app.services.firebase_service - INFO - Local SQLite database initialized successfully for Mock mode
+2026-07-09 23:36:14,256 - app.routes.emergency - INFO - Firebase service initialized successfully
+2026-07-09 23:36:14,257 - app.routes.emergency - INFO - SMS service initialized successfully
+2026-07-09 23:36:14,257 - app.routes.emergency - INFO - Route service initialized successfully
+2026-07-09 23:36:14,257 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-09 23:36:14,257 - app.routes.emergency - INFO - AI service initialized successfully
+2026-07-09 23:36:14,274 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-09 23:36:14,284 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-09 23:36:14,289 - app.services.ai_service - INFO - AI Service initialized successfully
+INFO:     Started server process [23276]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
