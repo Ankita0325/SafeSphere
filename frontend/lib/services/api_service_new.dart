@@ -171,9 +171,9 @@ class ApiService {
   Future<Map<String, dynamic>> _getReportIncidents(
     Map<String, String> params,
   ) async {
-    final latitude = _toDouble(params['lat']);
-    final longitude = _toDouble(params['lng']);
-    final radius = _toDouble(params['radius']);
+    final latitude = _toDouble(params['lat']) ?? 0.0;
+    final longitude = _toDouble(params['lng']) ?? 0.0;
+    final radius = _toDouble(params['radius']) ?? 15.0;
     final limit = int.tryParse(params['limit'] ?? '50') ?? 50;
     final category = params['category'];
 
@@ -192,8 +192,8 @@ class ApiService {
             return false;
           }
           if (latitude != 0.0 || longitude != 0.0) {
-            final lat = _toDouble(incident['latitude']);
-            final lng = _toDouble(incident['longitude']);
+            final lat = _toDouble(incident['latitude']) ?? 0.0;
+            final lng = _toDouble(incident['longitude']) ?? 0.0;
             final distance = _calculateDistance(latitude, longitude, lat, lng);
             return distance <= radius;
           }
@@ -248,8 +248,8 @@ class ApiService {
     final reportData = {
       'type': body['type'] ?? 'General',
       'description': body['description'] ?? body['incident_description'] ?? '',
-      'latitude': _toDouble(body['latitude']),
-      'longitude': _toDouble(body['longitude']),
+      'latitude': _toDouble(body['latitude']) ?? 0.0,
+      'longitude': _toDouble(body['longitude']) ?? 0.0,
       'address': body['address'] ?? 'Unknown Location',
       'is_anonymous': body['is_anonymous'] ?? true,
       'severity': body['severity'] ?? 'medium',
@@ -318,8 +318,8 @@ class ApiService {
     final userId = body['user_id']?.toString() ?? 'anonymous';
     final emergencyData = {
       'user_id': userId,
-      'latitude': _toDouble(body['latitude']),
-      'longitude': _toDouble(body['longitude']),
+      'latitude': _toDouble(body['latitude']) ?? 0.0,
+      'longitude': _toDouble(body['longitude']) ?? 0.0,
       'status': 'active',
       'incident_type': body['emergency_type'] ??
           body['incident_type'] ??
@@ -383,8 +383,8 @@ class ApiService {
       return {
         'id': doc.id,
         'user_id': data['user_id'],
-        'latitude': _toDouble(data['latitude']),
-        'longitude': _toDouble(data['longitude']),
+        'latitude': _toDouble(data['latitude']) ?? 0.0,
+        'longitude': _toDouble(data['longitude']) ?? 0.0,
         'status': data['status'] ?? 'active',
         'incident_type': data['incident_type'],
         'description': data['description'],
@@ -411,8 +411,8 @@ class ApiService {
     }
 
     final emergency = emergencySnapshot.docs.first.data();
-    final lat = _toDouble(emergency['latitude']);
-    final lng = _toDouble(emergency['longitude']);
+    final lat = _toDouble(emergency['latitude']) ?? 19.0760;
+    final lng = _toDouble(emergency['longitude']) ?? 72.8777;
 
     final services = [
       {
@@ -438,8 +438,8 @@ class ApiService {
                 'distance_km': _calculateDistance(
                   lat,
                   lng,
-                  _toDouble(service['latitude']),
-                  _toDouble(service['longitude']),
+                  _toDouble(service['latitude']) ?? 0.0,
+                  _toDouble(service['longitude']) ?? 0.0,
                 ),
               })
           .toList(),
@@ -538,17 +538,17 @@ class ApiService {
   Future<Map<String, dynamic>> _getNearbySafeZones(
     Map<String, String> params,
   ) async {
-    final latitude = _toDouble(params['lat']);
-    final longitude = _toDouble(params['lng']);
-    final radius = _toDouble(params['radius']);
+    final latitude = _toDouble(params['lat']) ?? 19.0760;
+    final longitude = _toDouble(params['lng']) ?? 72.8777;
+    final radius = _toDouble(params['radius']) ?? 5.0;
 
     final snapshot = await _firestore.collection('safe_zones').get();
     final zones = snapshot.docs.map((doc) {
       final data = doc.data();
       return {
         'name': data['name'] ?? 'Safe Zone',
-        'latitude': _toDouble(data['latitude']),
-        'longitude': _toDouble(data['longitude']),
+        'latitude': _toDouble(data['latitude']) ?? 0.0,
+        'longitude': _toDouble(data['longitude']) ?? 0.0,
         'type': data['type'] ?? 'police',
         'address': data['address'] ?? '',
         'phone': data['phone'] ?? '',
@@ -556,8 +556,8 @@ class ApiService {
     }).toList();
 
     final filtered = zones.where((zone) {
-      final lat = _toDouble(zone['latitude']);
-      final lng = _toDouble(zone['longitude']);
+      final lat = _toDouble(zone['latitude']) ?? 0.0;
+      final lng = _toDouble(zone['longitude']) ?? 0.0;
       final distance = _calculateDistance(latitude, longitude, lat, lng);
       return distance <= radius;
     }).toList();
@@ -568,8 +568,8 @@ class ApiService {
   Future<Map<String, dynamic>> _getRouteSafetyScore(
     Map<String, String> params,
   ) async {
-    final latitude = _toDouble(params['lat']);
-    final longitude = _toDouble(params['lng']);
+    final latitude = _toDouble(params['lat']) ?? 19.0760;
+    final longitude = _toDouble(params['lng']) ?? 72.8777;
     final recentReportsSnapshot = await _firestore
         .collection('reports')
         .orderBy('timestamp', descending: true)
