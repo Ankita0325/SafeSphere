@@ -9,6 +9,7 @@ import 'route_screen.dart';
 import 'emergency_screen.dart';
 import 'community_screen.dart';
 import 'profile_screen.dart';
+import 'safe_maps_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Home Content Widget – welcome card removed
+// Home Content Widget
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -113,7 +114,6 @@ class _HomeContentState extends State<HomeContent> {
         });
       }
     } catch (e) {
-      // Use fallback mock data when API fails
       if (mounted) {
         setState(() {
           _notifications = [
@@ -164,13 +164,149 @@ class _HomeContentState extends State<HomeContent> {
       case 'green':
         return Colors.green;
       case 'yellow':
-        return Colors.yellow;
+        return Colors.yellow.shade700;
       case 'orange':
         return Colors.orange;
       case 'red':
         return Colors.red;
       default:
-        return Colors.yellow;
+        return Colors.yellow.shade700;
+    }
+  }
+
+  void _showNearbyServiceDetails(String serviceName, String icon, String address, String phone) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6E3FB0).withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _getServiceIcon(icon),
+                    color: const Color(0xFF6E3FB0),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    serviceName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A2E),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  _buildDetailRow(Icons.location_on_outlined, 'Address', address),
+                  const SizedBox(height: 8),
+                  _buildDetailRow(Icons.phone_outlined, 'Phone', phone),
+                  const SizedBox(height: 8),
+                  _buildDetailRow(Icons.timer_outlined, 'Distance', '0.5 km away'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.directions),
+                label: const Text('Get Directions'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6E3FB0),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Colors.grey.shade600),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF1A1A2E),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getServiceIcon(String iconName) {
+    switch (iconName) {
+      case 'police':
+        return Icons.local_police;
+      case 'hospital':
+        return Icons.local_hospital;
+      case 'fire':
+        return Icons.fire_extinguisher;
+      default:
+        return Icons.place;
     }
   }
 
@@ -179,20 +315,65 @@ class _HomeContentState extends State<HomeContent> {
     final safetyService = Provider.of<SafetyScoreService>(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text(
-          'Home',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.shield,
+                size: 20,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hello, Riya 🚀',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'You\'re Protected',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         backgroundColor: const Color(0xFF6E3FB0),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              _showNotifications(context);
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: Colors.white,
+                size: 22,
+              ),
+              onPressed: () {
+                _showNotifications(context);
+              },
+            ),
           ),
         ],
       ),
@@ -207,81 +388,232 @@ class _HomeContentState extends State<HomeContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSafetyScore(safetyService),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Quick Actions
-              const Text(
-                'Quick Actions',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildQuickActionCard(
+                        icon: Icons.shield_outlined,
+                        label: 'AI Safe Protect',
+                        color: const Color(0xFF7C3AED),
+                        onTap: () {
+                          // Navigate to AI Safe Protect
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildQuickActionCard(
+                        icon: Icons.location_on_outlined,
+                        label: 'Use Location',
+                        color: const Color(0xFFE4406C),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SafeMapsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildQuickActionCard(
+                        icon: Icons.warning_amber_outlined,
+                        label: 'Report Incident',
+                        color: Colors.orange.shade700,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/community');
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.3,
-                children: [
-                  _buildQuickAction(
-                    icon: Icons.heat_pump,
-                    label: 'Heatmap',
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/heatmap');
-                    },
-                  ),
-                  _buildQuickAction(
-                    icon: Icons.support_agent,
-                    label: 'Support',
-                    color: Colors.purple,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/support');
-                    },
-                  ),
-                ],
               ),
               const SizedBox(height: 24),
 
-              // Safety Tips
-              const Text(
-                'Safety Tips',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              // Nearby Services Section - FIXED VISIBILITY
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Nearby Services',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1A2E),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              'See All',
+                              style: TextStyle(
+                                color: Color(0xFF6E3FB0),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 140,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        children: [
+                          _buildServiceCard(
+                            icon: Icons.local_police,
+                            label: 'Police\nStation',
+                            color: Colors.blue.shade600,
+                            onTap: () {
+                              _showNearbyServiceDetails(
+                                'Andheri Police Station',
+                                'police',
+                                'Andheri East, Mumbai - 400093',
+                                '+91 22 2833 4500',
+                              );
+                            },
+                          ),
+                          _buildServiceCard(
+                            icon: Icons.local_hospital,
+                            label: 'Hospital',
+                            color: Colors.red.shade600,
+                            onTap: () {
+                              _showNearbyServiceDetails(
+                                'Kokilaben Hospital',
+                                'hospital',
+                                'Andheri West, Mumbai - 400053',
+                                '+91 22 3099 9999',
+                              );
+                            },
+                          ),
+                          _buildServiceCard(
+                            icon: Icons.fire_extinguisher,
+                            label: 'Fire\nStation',
+                            color: Colors.orange.shade700,
+                            onTap: () {
+                              _showNearbyServiceDetails(
+                                'Andheri Fire Station',
+                                'fire',
+                                'Andheri East, Mumbai - 400093',
+                                '+91 22 2685 0300',
+                              );
+                            },
+                          ),
+                          _buildServiceCard(
+                            icon: Icons.shield_outlined,
+                            label: 'Safety\nTacks',
+                            color: const Color(0xFF6E3FB0),
+                            onTap: () {
+                              _showNearbyServiceDetails(
+                                'Safety Checkpoint',
+                                'safety',
+                                'Near Andheri Station, Mumbai',
+                                '+91 9820 123 456',
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // Safety Tacks Section - FIXED VISIBILITY
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF7C3AED).withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF7C3AED).withOpacity(0.2),
-                  ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSafetyTip(
-                      icon: Icons.share_location,
-                      title: 'Share your location',
-                      description: 'Share your live location with trusted contacts',
+                    const Text(
+                      'Safety Tacks',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A2E),
+                      ),
                     ),
-                    const Divider(),
-                    _buildSafetyTip(
-                      icon: Icons.phone,
-                      title: 'Emergency contacts',
-                      description: 'Keep emergency contacts updated',
-                    ),
-                    const Divider(),
-                    _buildSafetyTip(
-                      icon: Icons.flag,
-                      title: 'Report incident',
-                      description: 'Report any suspicious activity immediately',
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              _showSafeRouteDetails();
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: _buildSafetyTackItem(
+                              icon: Icons.route,
+                              label: 'Safe\nRoute',
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              _showTrustedContactsDialog();
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: _buildSafetyTackItem(
+                              icon: Icons.people,
+                              label: 'Trusted\nContacts',
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/emergency');
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: _buildSafetyTackItem(
+                              icon: Icons.emergency,
+                              label: 'SOS\nAlert',
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -294,14 +626,14 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  // ✅ Safety Score Widget – with gradient background
+  // ✅ Safety Score Widget
   Widget _buildSafetyScore(SafetyScoreService safetyService) {
     if (safetyService.isLoading) {
       return Container(
-        height: 200,
+        height: 180,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6E3FB0), Color(0xFFE4406C)],
+            colors: [Color(0xFF6E3FB0), Color(0xFF8A3FFC)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -314,18 +646,18 @@ class _HomeContentState extends State<HomeContent> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6E3FB0), Color(0xFFE4406C)],
+          colors: [Color(0xFF6E3FB0), Color(0xFF8A3FFC)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 10,
+            color: const Color(0xFF6E3FB0).withOpacity(0.3),
+            blurRadius: 15,
             offset: const Offset(0, 4),
           ),
         ],
@@ -333,20 +665,47 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row with circular score and labels
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Safety Score',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  safetyService.safetyStatus,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
-              // Circular progress with score
               SizedBox(
-                width: 70,
-                height: 70,
+                width: 80,
+                height: 80,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     CircularProgressIndicator(
                       value: safetyService.overallScore / 100,
-                      strokeWidth: 6,
-                      backgroundColor: Colors.white.withOpacity(0.3),
+                      strokeWidth: 8,
+                      backgroundColor: Colors.white.withOpacity(0.2),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Colors.white,
                       ),
@@ -358,13 +717,13 @@ class _HomeContentState extends State<HomeContent> {
                           Text(
                             '${safetyService.overallScore}',
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
                           const Text(
-                            '/ 100',
+                            'Score',
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.white70,
@@ -376,61 +735,63 @@ class _HomeContentState extends State<HomeContent> {
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Safety Score',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
                     Row(
                       children: [
                         Icon(
                           safetyService.overallScore >= 70
-                              ? Icons.trending_up
-                              : Icons.trending_down,
+                              ? Icons.verified
+                              : Icons.warning,
                           color: safetyService.overallScore >= 70
-                              ? Colors.green
-                              : Colors.orange,
-                          size: 16,
+                              ? Colors.green.shade300
+                              : Colors.orange.shade300,
+                          size: 18,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
-                          safetyService.safetyStatus,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.85),
-                            fontWeight: FontWeight.w500,
+                          safetyService.overallScore >= 70 ? 'Good' : 'Fair',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                          horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(
                         color: _getTrustColor(safetyService.trustColor)
                             .withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                             color: _getTrustColor(safetyService.trustColor)
-                                .withOpacity(0.5)),
+                                .withOpacity(0.3)),
                       ),
-                      child: Text(
-                        'Trust: ${safetyService.trustLevel}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.verified_outlined,
+                            size: 14,
+                            color: _getTrustColor(safetyService.trustColor),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Trust: ${safetyService.trustLevel}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -439,76 +800,68 @@ class _HomeContentState extends State<HomeContent> {
             ],
           ),
           const SizedBox(height: 16),
-          Divider(color: Colors.white.withOpacity(0.3), thickness: 1),
-          const SizedBox(height: 8),
-
-          // Metric rows with progress bars – using distinct colours
-          _buildMetricRow(
-            label: 'AI Detection',
-            value: safetyService.aiDetectionScore,
-            color: const Color(0xFF8A3FFC),
-          ),
-          const SizedBox(height: 8),
-          _buildMetricRow(
-            label: 'SOS Response',
-            value: safetyService.sosResponseScore,
-            color: const Color(0xFFE4406C),
-          ),
-          const SizedBox(height: 8),
-          _buildMetricRow(
-            label: 'Community Trust',
-            value: safetyService.communityTrustScore,
-            color: const Color(0xFFFF8A5B),
+          Row(
+            children: [
+              _buildMiniMetric('AI Safe', safetyService.aiDetectionScore, const Color(0xFFB388FF)),
+              const SizedBox(width: 8),
+              _buildMiniMetric('SOS', safetyService.sosResponseScore, const Color(0xFFFF8A80)),
+              const SizedBox(width: 8),
+              _buildMiniMetric('Community', safetyService.communityTrustScore, const Color(0xFFFFE57F)),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMetricRow({
-    required String label,
-    required int value,
-    required Color color,
-  }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 100,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
+  Widget _buildMiniMetric(String label, int value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 3,
+              height: 16,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-        ),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: value / 100,
-              backgroundColor: Colors.white.withOpacity(0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 6,
+            const SizedBox(width: 4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 8,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                  Text(
+                    '$value%',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Text(
-          '$value%',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  // ---- Helper widgets ----
-  Widget _buildQuickAction({
+  Widget _buildQuickActionCard({
     required IconData icon,
     required String label,
     required Color color,
@@ -518,32 +871,87 @@ class _HomeContentState extends State<HomeContent> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 24, color: color),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1A1A2E),
+                height: 1.1,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceCard({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: color.withOpacity(0.2),
-            width: 1.5,
+            color: color.withOpacity(0.1),
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: color),
+              child: Icon(icon, size: 28, color: color),
             ),
             const SizedBox(height: 8),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: color,
+                color: const Color(0xFF1A1A2E),
+                height: 1.2,
               ),
             ),
           ],
@@ -552,22 +960,180 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSafetyTip({
+  Widget _buildSafetyTackItem({
     required IconData icon,
-    required String title,
-    required String description,
+    required String label,
+    required Color color,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: color.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 22, color: color),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1A1A2E),
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Safe Route Details
+  void _showSafeRouteDetails() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Safe Routes',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A2E),
+                  ),
+                ),
+                Text(
+                  'Area Ratings',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildRouteCard(
+                    areaName: 'Andheri East',
+                    reports: 12,
+                    crimeScore: 85,
+                    safetyLevel: 'High',
+                    color: Colors.green,
+                  ),
+                  _buildRouteCard(
+                    areaName: 'Bandra West',
+                    reports: 8,
+                    crimeScore: 75,
+                    safetyLevel: 'Moderate',
+                    color: Colors.orange,
+                  ),
+                  _buildRouteCard(
+                    areaName: 'Juhu',
+                    reports: 5,
+                    crimeScore: 90,
+                    safetyLevel: 'Very High',
+                    color: Colors.green,
+                  ),
+                  _buildRouteCard(
+                    areaName: 'Dadar',
+                    reports: 15,
+                    crimeScore: 65,
+                    safetyLevel: 'Moderate',
+                    color: Colors.orange,
+                  ),
+                  _buildRouteCard(
+                    areaName: 'Colaba',
+                    reports: 7,
+                    crimeScore: 88,
+                    safetyLevel: 'High',
+                    color: Colors.green,
+                  ),
+                  _buildRouteCard(
+                    areaName: 'Lower Parel',
+                    reports: 20,
+                    crimeScore: 55,
+                    safetyLevel: 'Low',
+                    color: Colors.red,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRouteCard({
+    required String areaName,
+    required int reports,
+    required int crimeScore,
+    required String safetyLevel,
+    required Color color,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFFE4406C).withOpacity(0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFFE4406C), size: 20),
+            child: Center(
+              child: Text(
+                safetyLevel.substring(0, 1),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -575,21 +1141,255 @@ class _HomeContentState extends State<HomeContent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  areaName,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
                     fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1A1A2E),
                   ),
                 ),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Icon(Icons.report, size: 12, color: Colors.grey.shade600),
+                    const SizedBox(width: 3),
+                    Text(
+                      '$reports',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Icon(Icons.shield, size: 12, color: Colors.grey.shade600),
+                    const SizedBox(width: 3),
+                    Text(
+                      '$crimeScore%',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Text(
+              safetyLevel,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Trusted Contacts Dialog - FIXED BUTTON POSITION
+  void _showTrustedContactsDialog() {
+    List<Map<String, String>> trustedContacts = [
+      {'name': 'Mom', 'phone': '+91 98765 43210'},
+      {'name': 'Dad', 'phone': '+91 98765 43211'},
+      {'name': 'Best Friend', 'phone': '+91 98765 43212'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Container(
+          padding: const EdgeInsets.all(16),
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Trusted Contacts',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  Icon(Icons.people, color: Color(0xFF6E3FB0), size: 26),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'These contacts will be alerted in case of emergency',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: trustedContacts.length,
+                  itemBuilder: (context, index) {
+                    final contact = trustedContacts[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey.shade200,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6E3FB0).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                contact['name']![0].toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF6E3FB0),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  contact['name']!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1A1A2E),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  contact['phone']!,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                trustedContacts.removeAt(index);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Button moved up - removed SizedBox height
+              ElevatedButton.icon(
+                onPressed: () {
+                  _showAddContactDialog(context, trustedContacts, setState);
+                },
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add Trusted Contact'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6E3FB0),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddContactDialog(BuildContext context, List<Map<String, String>> contacts, StateSetter setState) {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Trusted Contact'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
+                setState(() {
+                  contacts.add({
+                    'name': nameController.text,
+                    'phone': phoneController.text,
+                  });
+                });
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6E3FB0),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Add'),
           ),
         ],
       ),
