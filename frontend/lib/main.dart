@@ -25,6 +25,11 @@ import 'screen/route_screen.dart';
 import 'screen/community_screen.dart';
 import 'screen/support_screen.dart';
 import 'screen/profile_screen.dart';
+import 'screen/my_profile_screen.dart';
+import 'screen/emergency_contacts_screen.dart';
+import 'screen/emergency_history_screen.dart';
+import 'screen/notifications_screen.dart';
+import 'screen/location_settings_screen.dart';
 
 // Import utils
 import 'utils/theme.dart';

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import '../models/emergency_model.dart';
@@ -8,6 +7,7 @@ import 'location_service.dart';
 class EmergencyService extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   final LocationService _locationService = LocationService();
+  int _sosTriggerCount = 0;
 
   bool _isEmergencyActive = false;
   Emergency? _currentEmergency;
@@ -16,6 +16,7 @@ class EmergencyService extends ChangeNotifier {
   bool get isEmergencyActive => _isEmergencyActive;
   Emergency? get currentEmergency => _currentEmergency;
   List<Emergency> get emergencyHistory => _emergencyHistory;
+  int get sosTriggerCount => _sosTriggerCount;
 
   Future<void> _playSiren() async {
     try {
@@ -42,6 +43,7 @@ class EmergencyService extends ChangeNotifier {
     bool playSiren = true,
   }) async {
     _isEmergencyActive = true;
+    _sosTriggerCount++;
     notifyListeners();
 
     try {
@@ -88,6 +90,7 @@ class EmergencyService extends ChangeNotifier {
     String? description,
   }) async {
     _isEmergencyActive = true;
+    _sosTriggerCount++;
     notifyListeners();
 
     try {
