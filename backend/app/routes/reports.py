@@ -8,6 +8,8 @@ from app.services.safety_score_calculator import SafetyScoreCalculator
 from datetime import datetime, timedelta
 import logging
 import json
+import math
+
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -264,14 +266,38 @@ async def get_heatmap_data(
                 if (i.get('category') or i.get('incident_type', '')).lower() == category.lower()
             ]
 
-        # Process data for heatmap
+        # Nearby hospital layer (green) for map display
+        hospitals_raw = firebase.get_nearby_hospitals(lat, lng) or []
+        hospitals_payload = []
+        for h in hospitals_raw:
+            if not isinstance(h, dict):
+                continue
+            h_lat = h.get('latitude', h.get('lat', 0.0))
+            h_lng = h.get('longitude', h.get('lng', 0.0))
+            try:
+                h_lat = float(h_lat)
+                h_lng = float(h_lng)
+            except Exception:
+                continue
+            if h_lat == 0.0 and h_lng == 0.0:
+                continue
+            hospitals_payload.append({
+                'name': h.get('name') or h.get('hospital_name') or 'Hospital',
+                'latitude': h_lat,
+                'longitude': h_lng,
+                # Optional radius in meters for UI circles
+                'radius_m': h.get('radius_m', 500)
+            })
+
+        # Process data for heatmap (unsafe incidents)
         heatmap_data = []
         for incident in incidents:
             if incident.get('status') == 'rejected':
                 continue
-                
+
             # Calculate dynamic weight based on recency and verification status
             status = incident.get('status', 'pending').lower()
+
             verify_weight = 1.0 if status == 'verified' else 0.5
             
             # Recency decay weight: weight = e^(-t/15)
@@ -295,6 +321,13 @@ async def get_heatmap_data(
                 calc = SafetyScoreCalculator(police_stations=police, hospitals=hospitals)
                 score_res = calc.calculate_score(incident.get('latitude'), incident.get('longitude'), incidents)
 
+                severity = (incident.get('severity', 'medium') or '').lower()
+                status = (incident.get('status', 'pending') or '').lower()
+
+                # Ensure UI requirement: only high-risk incidents render as RED circles.
+                # Hospitals are handled separately in `hospitals_payload`.
+                forced_color = 'red' if severity == 'high' else score_res.get("color_code")
+
                 heatmap_data.append({
                     "id": incident.get('id'),
                     "latitude": incident.get('latitude'),
@@ -305,8 +338,8 @@ async def get_heatmap_data(
                     "category": incident.get('category', 'Harassment'),
                     "status": incident.get('status', 'pending'),
                     "safety_score": score_res["safety_score"],
-                    "risk_level": score_res["status"],
-                    "color": score_res["color_code"],
+                    "risk_level": score_res.get("status"),
+                    "color": forced_color,
                     "upvotes": incident.get('upvotes', 0),
                     "downvotes": incident.get('downvotes', 0),
                     "description": incident.get('description', '')
@@ -321,10 +354,12 @@ async def get_heatmap_data(
         
         return {
             "heatmap_data": heatmap_data,
+            "hospitals": hospitals_payload,
             "analysis": analysis,
             "total_incidents": len(incidents),
             "timestamp": datetime.now().isoformat()
         }
+
     except Exception as e:
         logger.error(f"Error generating heatmap data: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../services/location_service.dart';
 import '../utils/theme.dart';
+
+// NOTE: `flutter_map_heatmap_plus` import was removed because the package's import path
+// does not exist in this environment. Current implementation keeps the UI requirement
+// for red danger vs green safe using rendered circles + markers.
 
 class HeatmapScreen extends StatefulWidget {
   const HeatmapScreen({super.key});
@@ -21,16 +26,20 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   final List<Marker> _markers = [];
-  List<CircleMarker> _circles = [];
+  final List<CircleMarker> _circles = [];
   LatLng _currentLocation = const LatLng(19.0760, 72.8777);
   bool _isLoading = false;
 
   // Filter States
   int _selectedDays = 30; // 1, 3, 7, 30
-  String? _selectedCategory; // All, Harassment, Stalking, Theft, Poor Lighting, Unsafe Transport
-  
+  String?
+      _selectedCategory; // All, Harassment, Stalking, Theft, Poor Lighting, Unsafe Transport
+
   List<Map<String, dynamic>> _heatmapData = [];
+  List<Map<String, dynamic>> _hospitalData = [];
   Map<String, dynamic> _aiAnalysis = {};
+
+  bool _showHospitals = true;
 
   final List<String> _categories = [
     'All',
@@ -49,7 +58,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   }
 
   Future<void> _fetchUserLocation() async {
-    final locationService = Provider.of<LocationService>(context, listen: false);
+    final locationService =
+        Provider.of<LocationService>(context, listen: false);
     final pos = locationService.currentPosition;
     if (pos != null) {
       setState(() {
@@ -64,7 +74,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   Future<void> _getCurrentLocation() async {
     setState(() => _isLoading = true);
     try {
-      final locationService = Provider.of<LocationService>(context, listen: false);
+      final locationService =
+          Provider.of<LocationService>(context, listen: false);
       final position = await locationService.getCurrentPosition();
       if (position != null && mounted) {
         setState(() {
@@ -85,16 +96,21 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   Future<void> _loadHeatmapData() async {
     setState(() => _isLoading = true);
     try {
-      String endpoint = '/reports/heatmap-data?lat=${_currentLocation.latitude}&lng=${_currentLocation.longitude}&radius=15&days=$_selectedDays';
+      String endpoint =
+          '/reports/heatmap-data?lat=${_currentLocation.latitude}&lng=${_currentLocation.longitude}&radius=15&days=$_selectedDays';
       if (_selectedCategory != null && _selectedCategory != 'All') {
         endpoint += '&category=$_selectedCategory';
       }
 
       final response = await _apiService.get(endpoint);
       final data = response['heatmap_data'] as List?;
-      
+      final hospitals = response['hospitals'] as List?;
+
       if (data != null) {
         _heatmapData = data.map((e) => Map<String, dynamic>.from(e)).toList();
+        _hospitalData = (hospitals ?? [])
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
         _aiAnalysis = response['analysis'] ?? {};
         _buildMapLayers();
       }
@@ -125,7 +141,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
         'color': 'red',
         'upvotes': 8,
         'downvotes': 0,
-        'description': 'Multiple harassment reports near Andheri West railway station.'
+        'description':
+            'Multiple harassment reports near Andheri West railway station.'
       },
       {
         'id': 'off_2',
@@ -141,7 +158,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
         'color': 'orange',
         'upvotes': 3,
         'downvotes': 1,
-        'description': 'Isolated dark street under Bandra flyover. Streetlights out.'
+        'description':
+            'Isolated dark street under Bandra flyover. Streetlights out.'
       },
       {
         'id': 'off_3',
@@ -170,17 +188,20 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   }
 
   Color _getRiskColor(String colorStr, {double opacity = 1.0}) {
+    if (colorStr.toLowerCase().contains('red')) {
+      return AppTheme.dangerRed.withValues(alpha: opacity);
+    }
     switch (colorStr.toLowerCase()) {
       case 'green':
-        return AppTheme.safeGreen.withOpacity(opacity);
+        return AppTheme.safeGreen.withValues(alpha: opacity);
       case 'yellow':
-        return AppTheme.warningOrange.withOpacity(opacity); // Using yellow/orange blend
+        return AppTheme.warningOrange.withValues(alpha: opacity);
       case 'orange':
-        return Colors.orange.withOpacity(opacity);
+        return Colors.orange.withValues(alpha: opacity);
       case 'red':
-        return AppTheme.dangerRed.withOpacity(opacity);
+        return AppTheme.dangerRed.withValues(alpha: opacity);
       default:
-        return Colors.blue.withOpacity(opacity);
+        return Colors.blue.withValues(alpha: opacity);
     }
   }
 
@@ -188,13 +209,44 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
     _markers.clear();
     _circles.clear();
 
+    // Optional hospital layer (green)
+    if (_showHospitals && _hospitalData.isNotEmpty) {
+      for (var hosp in _hospitalData) {
+        final lat = (hosp['latitude'] ?? hosp['lat'] ?? 0.0).toDouble();
+        final lng = (hosp['longitude'] ?? hosp['lng'] ?? 0.0).toDouble();
+        if (lat == 0.0 && lng == 0.0) continue;
+
+        _markers.add(
+          Marker(
+            point: LatLng(lat, lng),
+            child: const Icon(Icons.local_hospital,
+                color: AppTheme.safeGreen, size: 22),
+          ),
+        );
+
+        final radiusMeters = (hosp['radius_m'] ?? 500) is num
+            ? (hosp['radius_m'] as num).toDouble()
+            : 500.0;
+        _circles.add(
+          CircleMarker(
+            point: LatLng(lat, lng),
+            radius: radiusMeters,
+            useRadiusInMeter: true,
+            color: AppTheme.safeGreen.withValues(alpha: 0.18),
+            borderColor: AppTheme.safeGreen.withValues(alpha: 0.9),
+            borderStrokeWidth: 1.5,
+          ),
+        );
+      }
+    }
+
     // Current User Location Marker
     _markers.add(
       Marker(
         point: _currentLocation,
         child: Container(
           decoration: BoxDecoration(
-            color: AppTheme.locationBlue.withOpacity(0.2),
+            color: AppTheme.locationBlue.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           padding: const EdgeInsets.all(6),
@@ -215,11 +267,11 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
       final lng = (report['longitude'] ?? 0.0).toDouble();
       final colorStr = report['color'] ?? 'orange';
       final severity = report['severity'] ?? 'medium';
-      
-      final radius = severity == 'high' 
-          ? 350.0 
-          : severity == 'medium' 
-              ? 250.0 
+
+      final radius = severity == 'high'
+          ? 350.0
+          : severity == 'medium'
+              ? 250.0
               : 150.0;
 
       // Clickable transparent markers
@@ -229,10 +281,10 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
           child: GestureDetector(
             onTap: () => _showLocationDetailsBottomSheet(report),
             child: Icon(
-              severity == 'high' 
-                  ? Icons.error 
-                  : severity == 'medium' 
-                      ? Icons.warning 
+              severity == 'high'
+                  ? Icons.error
+                  : severity == 'medium'
+                      ? Icons.warning
                       : Icons.info,
               color: _getRiskColor(colorStr),
               size: 28,
@@ -241,14 +293,17 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
         ),
       );
 
+      final bool isHighRisk = (severity.toString().toLowerCase() == 'high');
+      final String effectiveColorStr = isHighRisk ? 'red' : colorStr;
+
       // Area safety circle mapping
       _circles.add(
         CircleMarker(
           point: LatLng(lat, lng),
           radius: radius,
           useRadiusInMeter: true,
-          color: _getRiskColor(colorStr, opacity: 0.22),
-          borderColor: _getRiskColor(colorStr, opacity: 0.8),
+          color: _getRiskColor(effectiveColorStr, opacity: 0.22),
+          borderColor: _getRiskColor(effectiveColorStr, opacity: 0.8),
           borderStrokeWidth: 1.5,
         ),
       );
@@ -267,7 +322,7 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
     // In production we geocode using OpenStreetMap Nominatim / Mapbox
     final lowerQuery = query.toLowerCase();
     LatLng target = _currentLocation;
-    
+
     if (lowerQuery.contains('andheri')) {
       target = const LatLng(19.1179, 72.8488);
     } else if (lowerQuery.contains('bandra')) {
@@ -278,7 +333,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
       target = const LatLng(18.9220, 72.8347);
     } else {
       // Offsets coordinate search representation
-      target = LatLng(_currentLocation.latitude + 0.015, _currentLocation.longitude + 0.015);
+      target = LatLng(_currentLocation.latitude + 0.015,
+          _currentLocation.longitude + 0.015);
     }
 
     setState(() {
@@ -302,8 +358,9 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
             final int score = report['safety_score'] ?? 75;
             final String riskLevel = report['risk_level'] ?? 'Low Risk';
             final String colorName = report['color'] ?? 'yellow';
-            final String desc = report['description'] ?? 'No incident description';
-            
+            final String desc =
+                report['description'] ?? 'No incident description';
+
             return DraggableScrollableSheet(
               initialChildSize: 0.65,
               maxChildSize: 0.9,
@@ -312,7 +369,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
               builder: (context, scrollController) {
                 return SingleChildScrollView(
                   controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -327,7 +385,7 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Heading
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -337,7 +395,9 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  report['category'] ?? report['type'] ?? 'Safety Zone Area',
+                                  report['category'] ??
+                                      report['type'] ??
+                                      'Safety Zone Area',
                                   style: GoogleFonts.outfit(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
@@ -347,12 +407,15 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    Icon(Icons.location_on, color: AppTheme.accentViolet, size: 16),
+                                    Icon(Icons.location_on,
+                                        color: AppTheme.accentViolet, size: 16),
                                     const SizedBox(width: 4),
                                     Expanded(
                                       child: Text(
                                         'Lat: ${report['latitude'].toStringAsFixed(4)}, Lng: ${report['longitude'].toStringAsFixed(4)}',
-                                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                                        style: TextStyle(
+                                            color: AppTheme.textSecondary,
+                                            fontSize: 13),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -362,14 +425,15 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                               ],
                             ),
                           ),
-                          
+
                           // Safety Score Gauge
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: _getRiskColor(colorName, opacity: 0.15),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: _getRiskColor(colorName), width: 1.5),
+                              border: Border.all(
+                                  color: _getRiskColor(colorName), width: 1.5),
                             ),
                             child: Column(
                               children: [
@@ -383,7 +447,8 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                                 ),
                                 const Text(
                                   'Safety Score',
-                                  style: TextStyle(fontSize: 10, color: Colors.white70),
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.white70),
                                 ),
                               ],
                             ),
@@ -391,7 +456,7 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Details Banner
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -402,9 +467,12 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildInfoColumn(Icons.security_update_warning, '${report['upvotes']} Upvotes', 'Authenticity'),
-                            _buildInfoColumn(Icons.flag_outlined, riskLevel, 'Risk Status'),
-                            _buildInfoColumn(Icons.info_outline, 'Verify Required', 'Verification'),
+                            _buildInfoColumn(Icons.security_update_warning,
+                                '${report['upvotes']} Upvotes', 'Authenticity'),
+                            _buildInfoColumn(
+                                Icons.flag_outlined, riskLevel, 'Risk Status'),
+                            _buildInfoColumn(Icons.info_outline,
+                                'Verify Required', 'Verification'),
                           ],
                         ),
                       ),
@@ -422,7 +490,10 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                       const SizedBox(height: 8),
                       Text(
                         desc,
-                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
+                        style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            height: 1.4),
                       ),
                       const SizedBox(height: 20),
 
@@ -432,20 +503,27 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                           Expanded(
                             child: Text(
                               'Help verify this report. Is this incident real?',
-                              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                              style: TextStyle(
+                                  color: AppTheme.textSecondary, fontSize: 13),
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.thumb_up_alt_outlined, color: Colors.green),
-                            onPressed: () => _castVote(report['id'], 'upvote', setModalState),
+                            icon: const Icon(Icons.thumb_up_alt_outlined,
+                                color: Colors.green),
+                            onPressed: () => _castVote(
+                                report['id'], 'upvote', setModalState),
                           ),
-                          Text('${report['upvotes']}', style: const TextStyle(color: Colors.green)),
+                          Text('${report['upvotes']}',
+                              style: const TextStyle(color: Colors.green)),
                           const SizedBox(width: 10),
                           IconButton(
-                            icon: const Icon(Icons.thumb_down_alt_outlined, color: Colors.red),
-                            onPressed: () => _castVote(report['id'], 'downvote', setModalState),
+                            icon: const Icon(Icons.thumb_down_alt_outlined,
+                                color: Colors.red),
+                            onPressed: () => _castVote(
+                                report['id'], 'downvote', setModalState),
                           ),
-                          Text('${report['downvotes']}', style: const TextStyle(color: Colors.red)),
+                          Text('${report['downvotes']}',
+                              style: const TextStyle(color: Colors.red)),
                         ],
                       ),
                       const Divider(color: Colors.white12, height: 30),
@@ -463,48 +541,63 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryPurple.withOpacity(0.1),
+                          color: AppTheme.primaryPurple.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppTheme.primaryPurple.withOpacity(0.3)),
+                          border: Border.all(
+                              color: AppTheme.primaryPurple
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Row(
                               children: [
-                                Icon(Icons.psychology, color: AppTheme.accentViolet),
+                                Icon(Icons.psychology,
+                                    color: AppTheme.accentViolet),
                                 SizedBox(width: 8),
                                 Text(
                                   'SafeSphere Advisor',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 8),
-Text(
-                               score < 40
-                                   ? 'High hazard zone. Avoid walking here, especially during night hours. If you must pass, request a SafeSphere Emergency Companion guard or contact local police.'
-                                   : score < 60
-                                       ? 'Caution recommended. Keep your phone accessible and share your live track path link with family.'
-                                       : 'Generally safe area. Maintain standard security awareness.',
-                               style: const TextStyle(fontSize: 13, height: 1.4, color: Colors.white),
-                             ),
-                             if (_aiAnalysis['recommendations'] != null) ...[
-                               const SizedBox(height: 12),
-                               Text(
-                                 'Recommendations:',
-                                 style: const TextStyle(color: AppTheme.accentViolet, fontSize: 12, fontWeight: FontWeight.bold),
-                               ),
-                               const SizedBox(height: 4),
-                               ...(_aiAnalysis['recommendations'] as List).map((rec) => Padding(
-                                 padding: const EdgeInsets.only(left: 8, top: 2),
-                                 child: Text(
-                                   '• $rec',
-                                   style: const TextStyle(color: Colors.white70, fontSize: 11),
-                                 ),
-                               )).toList(),
-                             ],
-                           ],
+                            Text(
+                              score < 40
+                                  ? 'High hazard zone. Avoid walking here, especially during night hours. If you must pass, request a SafeSphere Emergency Companion guard or contact local police.'
+                                  : score < 60
+                                      ? 'Caution recommended. Keep your phone accessible and share your live track path link with family.'
+                                      : 'Generally safe area. Maintain standard security awareness.',
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  height: 1.4,
+                                  color: Colors.white),
+                            ),
+                            if (_aiAnalysis['recommendations'] != null) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                'Recommendations:',
+                                style: const TextStyle(
+                                    color: AppTheme.accentViolet,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              ...(_aiAnalysis['recommendations'] as List)
+                                  .map((rec) => Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 8, top: 2),
+                                        child: Text(
+                                          '• $rec',
+                                          style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 11),
+                                        ),
+                                      ))
+                            ],
+                          ],
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -520,7 +613,8 @@ Text(
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryPurple,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                               ),
                               icon: const Icon(Icons.navigation, size: 18),
                               label: const Text('Navigate Safely'),
@@ -535,10 +629,13 @@ Text(
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.cardColor,
-                                side: const BorderSide(color: AppTheme.primaryPink),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                side: const BorderSide(
+                                    color: AppTheme.primaryPink),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                               ),
-                              icon: const Icon(Icons.report, color: AppTheme.primaryPink, size: 18),
+                              icon: const Icon(Icons.report,
+                                  color: AppTheme.primaryPink, size: 18),
                               label: const Text(
                                 'Report Incident',
                                 style: TextStyle(color: AppTheme.primaryPink),
@@ -566,7 +663,8 @@ Text(
         const SizedBox(height: 6),
         Text(
           text,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+              fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 2),
         Text(
@@ -577,36 +675,40 @@ Text(
     );
   }
 
-  Future<void> _castVote(String reportId, String voteType, StateSetter setModalState) async {
+  Future<void> _castVote(
+      String reportId, String voteType, StateSetter setModalState) async {
     try {
       final res = await _apiService.post(
         '/reports/$reportId/vote',
         body: {'vote_type': voteType},
       );
-      
+
       setModalState(() {
-        final index = _heatmapData.indexWhere((element) => element['id'] == reportId);
+        final index =
+            _heatmapData.indexWhere((element) => element['id'] == reportId);
         if (index != -1) {
           _heatmapData[index]['upvotes'] = res['upvotes'];
           _heatmapData[index]['downvotes'] = res['downvotes'];
           _heatmapData[index]['status'] = res['report_status'];
           _heatmapData[index]['safety_score'] = res['safety_score'];
-          
+
           if (res['report_status'] == 'rejected') {
             _heatmapData.removeAt(index);
           }
         }
       });
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(res['message'] ?? 'Vote recorded!'),
           backgroundColor: Colors.green,
         ),
       );
-      
+
       _buildMapLayers();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to vote: $e'),
@@ -646,11 +748,12 @@ Text(
               minZoom: 10,
             ),
             children: [
-TileLayer(
-                 urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                 subdomains: const ['a', 'b', 'c'],
-                 userAgentPackageName: 'com.womensafety.safesphere',
-               ),
+              TileLayer(
+                urlTemplate:
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c'],
+                userAgentPackageName: 'com.womensafety.safesphere',
+              ),
               CircleLayer(circles: _circles),
               MarkerLayer(markers: _markers),
             ],
@@ -670,7 +773,7 @@ TileLayer(
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -683,15 +786,40 @@ TileLayer(
                     decoration: InputDecoration(
                       hintText: 'Search dangerous zones or suburbs...',
                       hintStyle: const TextStyle(color: Colors.white30),
-                      prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
+                      prefixIcon:
+                          const Icon(Icons.search, color: AppTheme.primaryPink),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.my_location, color: AppTheme.accentViolet),
+                        icon: const Icon(Icons.my_location,
+                            color: AppTheme.accentViolet),
                         onPressed: _getCurrentLocation,
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
+                ),
+                const SizedBox(height: 8),
+
+                // Hospitals toggle
+                Row(
+                  children: [
+                    Text(
+                      'Hospitals',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 12),
+                    ),
+                    const Spacer(),
+                    Switch(
+                      value: _showHospitals,
+                      onChanged: (v) {
+                        setState(() {
+                          _showHospitals = v;
+                        });
+                        _buildMapLayers();
+                      },
+                      activeThumbColor: AppTheme.safeGreen,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
 
@@ -703,15 +831,18 @@ TileLayer(
                     itemCount: _categories.length,
                     itemBuilder: (context, index) {
                       final cat = _categories[index];
-                      final isSelected = _selectedCategory == cat || (_selectedCategory == null && cat == 'All');
-                      
+                      final isSelected = _selectedCategory == cat ||
+                          (_selectedCategory == null && cat == 'All');
+
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
                           label: Text(
                             cat,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : AppTheme.textSecondary,
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppTheme.textSecondary,
                               fontSize: 12,
                             ),
                           ),
@@ -745,12 +876,12 @@ TileLayer(
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.cardColor.withOpacity(0.92),
+                color: AppTheme.cardColor.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.08)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     blurRadius: 15,
                     offset: const Offset(0, 4),
                   ),
@@ -772,9 +903,10 @@ TileLayer(
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryPink.withOpacity(0.15),
+                          color: AppTheme.primaryPink.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -794,7 +926,7 @@ TileLayer(
                       activeTrackColor: AppTheme.primaryPink,
                       inactiveTrackColor: Colors.white12,
                       thumbColor: AppTheme.primaryPink,
-                      overlayColor: AppTheme.primaryPink.withOpacity(0.2),
+                      overlayColor: AppTheme.primaryPink.withValues(alpha: 0.2),
                       valueIndicatorColor: AppTheme.primaryPink,
                     ),
                     child: Slider(
@@ -816,11 +948,21 @@ TileLayer(
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text('1 Day ago', style: TextStyle(color: Colors.white54, fontSize: 10)),
-                      Text('3 Days', style: TextStyle(color: Colors.white54, fontSize: 10)),
-                      Text('7 Days', style: TextStyle(color: Colors.white54, fontSize: 10)),
-                      Text('15 Days', style: TextStyle(color: Colors.white54, fontSize: 10)),
-                      Text('30 Days', style: TextStyle(color: Colors.white54, fontSize: 10)),
+                      Text('1 Day ago',
+                          style:
+                              TextStyle(color: Colors.white54, fontSize: 10)),
+                      Text('3 Days',
+                          style:
+                              TextStyle(color: Colors.white54, fontSize: 10)),
+                      Text('7 Days',
+                          style:
+                              TextStyle(color: Colors.white54, fontSize: 10)),
+                      Text('15 Days',
+                          style:
+                              TextStyle(color: Colors.white54, fontSize: 10)),
+                      Text('30 Days',
+                          style:
+                              TextStyle(color: Colors.white54, fontSize: 10)),
                     ],
                   ),
                 ],
