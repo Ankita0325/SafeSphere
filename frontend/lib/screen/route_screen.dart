@@ -939,11 +939,11 @@ class _RouteScreenState extends State<RouteScreen> {
                             minZoom: 10,
                           ),
                           children: [
-                            TileLayer(
-                              urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-                              subdomains: const ['a', 'b', 'c', 'd'],
-                              userAgentPackageName: 'com.womensafety.women_safety_app',
-                            ),
+TileLayer(
+                               urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                               subdomains: const ['a', 'b', 'c'],
+                               userAgentPackageName: 'com.womensafety.safesphere',
+                             ),
                             CircleLayer(circles: _heatmapCircles),
                             MarkerLayer(markers: _markers),
                             if (_polylines.isNotEmpty) PolylineLayer(polylines: _polylines),

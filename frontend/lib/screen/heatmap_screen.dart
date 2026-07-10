@@ -20,7 +20,7 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
 
-  List<Marker> _markers = [];
+  final List<Marker> _markers = [];
   List<CircleMarker> _circles = [];
   LatLng _currentLocation = const LatLng(19.0760, 72.8777);
   bool _isLoading = false;
@@ -481,15 +481,30 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              score < 40
-                                  ? 'High hazard zone. Avoid walking here, especially during night hours. If you must pass, request a SafeSphere Emergency Companion guard or contact bandra police station.'
-                                  : score < 60
-                                      ? 'Caution recommended. Keep your phone accessible and share your live track path link with family.'
-                                      : 'Generally safe area. Maintain standard security awareness.',
-                              style: const TextStyle(fontSize: 13, height: 1.4, color: Colors.white),
-                            ),
-                          ],
+Text(
+                               score < 40
+                                   ? 'High hazard zone. Avoid walking here, especially during night hours. If you must pass, request a SafeSphere Emergency Companion guard or contact local police.'
+                                   : score < 60
+                                       ? 'Caution recommended. Keep your phone accessible and share your live track path link with family.'
+                                       : 'Generally safe area. Maintain standard security awareness.',
+                               style: const TextStyle(fontSize: 13, height: 1.4, color: Colors.white),
+                             ),
+                             if (_aiAnalysis['recommendations'] != null) ...[
+                               const SizedBox(height: 12),
+                               Text(
+                                 'Recommendations:',
+                                 style: const TextStyle(color: AppTheme.accentViolet, fontSize: 12, fontWeight: FontWeight.bold),
+                               ),
+                               const SizedBox(height: 4),
+                               ...(_aiAnalysis['recommendations'] as List).map((rec) => Padding(
+                                 padding: const EdgeInsets.only(left: 8, top: 2),
+                                 child: Text(
+                                   '• $rec',
+                                   style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                 ),
+                               )).toList(),
+                             ],
+                           ],
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -631,21 +646,11 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
               minZoom: 10,
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.womensafety.women_safety_app',
-                tileBuilder: (context, child, tile) {
-                  return ColorFiltered(
-                    colorFilter: const ColorFilter.matrix([
-                      -0.21, -0.21, -0.21, 0, 255, // Invert and shift for dark theme
-                      -0.07, -0.07, -0.07, 0, 255,
-                      0.07, 0.07, 0.07, 0, 255,
-                      0, 0, 0, 1, 0,
-                    ]),
-                    child: child,
-                  );
-                },
-              ),
+TileLayer(
+                 urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                 subdomains: const ['a', 'b', 'c'],
+                 userAgentPackageName: 'com.womensafety.safesphere',
+               ),
               CircleLayer(circles: _circles),
               MarkerLayer(markers: _markers),
             ],

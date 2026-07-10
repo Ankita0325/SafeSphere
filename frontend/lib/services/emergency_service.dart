@@ -57,7 +57,7 @@ class EmergencyService extends ChangeNotifier {
         'longitude': longitude,
         'emergency_type': incidentType ?? 'general',
         'description': description ?? 'SOS alert triggered',
-        'message': 'Emergency alert from Women Safety App',
+        'message': 'Emergency alert from SafeSphere',
       });
 
       _currentEmergency = Emergency(
@@ -104,7 +104,7 @@ class EmergencyService extends ChangeNotifier {
         'longitude': position?.longitude ?? 0.0,
         'emergency_type': incidentType ?? 'general',
         'description': description ?? 'SOS alert triggered',
-        'message': 'Emergency alert from Women Safety App',
+        'message': 'Emergency alert from SafeSphere',
       });
 
       _currentEmergency = Emergency(

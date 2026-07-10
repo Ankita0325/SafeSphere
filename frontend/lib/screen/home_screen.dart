@@ -67,10 +67,10 @@ class HomeContent extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Women Safety App',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
+title: const Text(
+           'SafeSphere',
+           style: TextStyle(fontWeight: FontWeight.w600),
+         ),
         backgroundColor: const Color(0xFF7C3AED),
         foregroundColor: Colors.white,
         elevation: 0,

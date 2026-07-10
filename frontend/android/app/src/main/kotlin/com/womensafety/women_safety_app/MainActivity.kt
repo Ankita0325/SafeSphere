@@ -1,4 +1,4 @@
-package com.womensafety.women_safety_app
+package com.womensafety.safesphere
 
 import io.flutter.embedding.android.FlutterActivity
 

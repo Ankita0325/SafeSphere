@@ -1,6 +1,6 @@
 
-name: SafeShere
-description: Women Safety Application with AI and Emergency Features
+name: SafeSphere
+description: SafeSphere - AI-Powered Safety Application with Emergency Features
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -60,8 +60,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
    
-  assets:
-    - assets/images/
-    - assets/icons/
-    - assets/fonts/
-    - assets/sounds/
+assets:
+     - assets/images/
+     - assets/icons/
+     - assets/fonts/
+     - assets/sounds/

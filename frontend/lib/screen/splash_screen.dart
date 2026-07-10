@@ -74,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Women Safety',
+                'SafeSphere',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,

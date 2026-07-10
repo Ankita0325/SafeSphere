@@ -29,11 +29,11 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: Center(child: Text('Women Safety')),
+          body: Center(child: Text('SafeSphere')),
         ),
       ),
     );
 
-    expect(find.text('Women Safety'), findsOneWidget);
+    expect(find.text('SafeSphere'), findsOneWidget);
   });
 }
