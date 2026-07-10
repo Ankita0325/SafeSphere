@@ -11,21 +11,21 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _rememberMe = false;
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late AnimationController _pulseController;
 
   final String _demoEmail = 'demo@example.com';
-  final String _demoPassword = 'Demo@123';
 
   // Color palette
   static const Color primaryDark = Color(0xFF0A0915);
@@ -45,25 +45,26 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
-    
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _animationController.forward();
   }
 
@@ -107,7 +108,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                       const SizedBox(height: 24),
                       _buildDemoCredentials(),
                       const SizedBox(height: 16),
-                      if (authService.error != null) _buildErrorMessage(authService.error!),
+                      if (authService.error != null)
+                        _buildErrorMessage(authService.error!),
                       const SizedBox(height: 20),
                       _buildLoginButton(),
                       const SizedBox(height: 20),
@@ -419,12 +421,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           Row(
             children: [
               Expanded(
-                child: _buildCredentialChip('demo@example.com', Icons.email_outlined),
+                child: _buildCredentialChip(
+                  'demo@example.com',
+                  Icons.email_outlined,
+                ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: _buildCredentialChip('Demo@123', Icons.lock_outline),
-              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -432,14 +434,15 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
+                // Avoid hardcoding any password (secret) in the client.
                 _emailController.text = _demoEmail;
-                _passwordController.text = _demoPassword;
-                _handleLogin();
+                _passwordController.clear();
               },
               style: TextButton.styleFrom(
                 backgroundColor: vibrantPink,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
