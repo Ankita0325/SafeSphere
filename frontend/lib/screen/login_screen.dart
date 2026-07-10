@@ -18,16 +18,12 @@ class _LoginScreenState extends State<LoginScreen>
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  bool _rememberMe = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late AnimationController _pulseController;
 
-  final String _demoEmail = 'demo@example.com';
-
-  // Color palette
   static const Color primaryDark = Color(0xFF0A0915);
   static const Color appBackgroundStart = Color(0xFF121026);
   static const Color appBackgroundEnd = Color(0xFF161330);
@@ -35,12 +31,9 @@ class _LoginScreenState extends State<LoginScreen>
   static const Color vibrantPink = Color(0xFFD92662);
   static const Color vibrantPinkLight = Color(0xFFE11D48);
   static const Color purpleAccent = Color(0xFF7C3AED);
-  static const Color purpleAccentLight = Color(0xFF6366F1);
   static const Color highRiskRed = Color(0xFFEF4444);
-  static const Color lowRiskGreen = Color(0xFF10B981);
   static const Color primaryText = Color(0xFFFFFFFF);
   static const Color secondaryText = Color(0xFF9CA3AF);
-  static const Color mutedBlue = Color(0xFFA5B4FC);
 
   @override
   void initState() {
@@ -103,19 +96,11 @@ class _LoginScreenState extends State<LoginScreen>
                       _buildEmailField(),
                       const SizedBox(height: 16),
                       _buildPasswordField(),
-                      const SizedBox(height: 12),
-                      _buildRememberAndForgot(),
                       const SizedBox(height: 24),
-                      _buildDemoCredentials(),
-                      const SizedBox(height: 16),
                       if (authService.error != null)
                         _buildErrorMessage(authService.error!),
                       const SizedBox(height: 20),
                       _buildLoginButton(),
-                      const SizedBox(height: 20),
-                      _buildDivider(),
-                      const SizedBox(height: 16),
-                      _buildQuickActions(),
                       const SizedBox(height: 20),
                       _buildFooter(),
                     ],
@@ -165,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen>
               );
             },
           ),
-          const SizedBox(height: 16),
+const SizedBox(height: 16),
           const Text(
             'SafeSphere',
             style: TextStyle(
@@ -173,34 +158,6 @@ class _LoginScreenState extends State<LoginScreen>
               fontWeight: FontWeight.bold,
               color: primaryText,
               letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Your Safety. Our Priority',
-            style: TextStyle(
-              fontSize: 14,
-              color: mutedBlue,
-              letterSpacing: 2,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: vibrantPink.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: vibrantPink.withOpacity(0.2)),
-            ),
-            child: Text(
-              '⚡ AI-Powered Safety',
-              style: TextStyle(
-                fontSize: 11,
-                color: vibrantPink,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1,
-              ),
             ),
           ),
         ],
@@ -330,164 +287,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildRememberAndForgot() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _rememberMe = !_rememberMe;
-            });
-          },
-          child: Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: _rememberMe ? vibrantPink : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: _rememberMe ? vibrantPink : secondaryText,
-                    width: 2,
-                  ),
-                ),
-                child: _rememberMe
-                    ? const Icon(Icons.check, color: Colors.white, size: 14)
-                    : null,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Remember Me',
-                style: TextStyle(
-                  color: secondaryText,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            _showForgotPasswordDialog(context);
-          },
-          style: TextButton.styleFrom(
-            foregroundColor: vibrantPink,
-            padding: EdgeInsets.zero,
-          ),
-          child: const Text(
-            'Forgot Password?',
-            style: TextStyle(fontSize: 13),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDemoCredentials() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            cardBackground.withOpacity(0.6),
-            purpleAccent.withOpacity(0.15),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: purpleAccent.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline, color: vibrantPink, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                '💡 Quick Access',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: vibrantPink,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCredentialChip(
-                  'demo@example.com',
-                  Icons.email_outlined,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                // Avoid hardcoding any password (secret) in the client.
-                _emailController.text = _demoEmail;
-                _passwordController.clear();
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: vibrantPink,
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '🚀 Quick Login',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCredentialChip(String text, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: primaryDark.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: secondaryText.withOpacity(0.15)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 14, color: purpleAccentLight),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 11,
-                color: secondaryText,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildErrorMessage(String error) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -540,96 +339,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildDivider() {
-    return Row(
-      children: [
-        Expanded(
-          child: Divider(
-            color: secondaryText.withOpacity(0.2),
-            thickness: 1,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'or continue with',
-            style: TextStyle(
-              color: secondaryText,
-              fontSize: 12,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Divider(
-            color: secondaryText.withOpacity(0.2),
-            thickness: 1,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildQuickActionButton(
-          icon: Icons.g_mobiledata,
-          label: 'Google',
-          color: Colors.red,
-        ),
-        const SizedBox(width: 12),
-        _buildQuickActionButton(
-          icon: Icons.facebook,
-          label: 'Facebook',
-          color: const Color(0xFF1877F2),
-        ),
-        const SizedBox(width: 12),
-        _buildQuickActionButton(
-          icon: Icons.apple,
-          label: 'Apple',
-          color: Colors.white,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Expanded(
-      child: OutlinedButton(
-        onPressed: () {
-          // Social login logic
-        },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: primaryText,
-          side: BorderSide(color: secondaryText.withOpacity(0.15)),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildFooter() {
     return Column(
       children: [
@@ -669,36 +378,7 @@ class _LoginScreenState extends State<LoginScreen>
             color: secondaryText.withOpacity(0.6),
           ),
         ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildFeatureBadge('🛡️', 'AI Detection'),
-            const SizedBox(width: 8),
-            _buildFeatureBadge('🚨', 'SOS & Siren'),
-            const SizedBox(width: 8),
-            _buildFeatureBadge('📍', 'Live Location'),
-          ],
-        ),
       ],
-    );
-  }
-
-  Widget _buildFeatureBadge(String emoji, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: cardBackground.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: secondaryText.withOpacity(0.1)),
-      ),
-      child: Text(
-        '$emoji $label',
-        style: TextStyle(
-          fontSize: 10,
-          color: secondaryText.withOpacity(0.7),
-        ),
-      ),
     );
   }
 
@@ -708,86 +388,16 @@ class _LoginScreenState extends State<LoginScreen>
         _isLoading = true;
       });
 
-      // Simulate network delay
       await Future.delayed(const Duration(seconds: 1));
 
       setState(() {
         _isLoading = false;
       });
 
-      // Navigate directly to home
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
     }
-  }
-
-  void _showForgotPasswordDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Reset Password',
-          style: TextStyle(color: primaryText),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Enter your email to receive password reset instructions.',
-              style: TextStyle(color: secondaryText),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              style: const TextStyle(color: primaryText),
-              decoration: InputDecoration(
-                hintText: 'Email address',
-                hintStyle: TextStyle(color: secondaryText),
-                filled: true,
-                fillColor: primaryDark,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: secondaryText,
-            ),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password reset link sent to your email!'),
-                  backgroundColor: lowRiskGreen,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: vibrantPink,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Send Reset Link'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
