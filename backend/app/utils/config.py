@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30") or "30")
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./women_safety.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./safesphere.db")
     
     # Application
     PORT: int = int(os.getenv("PORT", "8000") or "8000")

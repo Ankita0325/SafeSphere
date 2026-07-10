@@ -30,8 +30,8 @@ from app.routes import emergency_simple  # ADD THIS LINE
 
 # Create FastAPI app
 app = FastAPI(
-    title="Women Safety API",
-    description="Comprehensive API for Women Safety Application with AI Features",
+    title="SafeSphere API",
+    description="Comprehensive API for SafeSphere with AI Features",
     version="2.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -61,7 +61,7 @@ app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytic
 async def root():
     """Root endpoint"""
     return {
-        "message": "Women Safety API",
+        "message": "SafeSphere API",
         "version": "2.0.0",
         "status": "running",
         "timestamp": datetime.now().isoformat(),
