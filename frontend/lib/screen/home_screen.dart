@@ -181,10 +181,10 @@ class _HomeContentState extends State<HomeContent> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Women Safety App',
+          'Home',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: const Color(0xFF7C3AED),
+        backgroundColor: const Color(0xFF6E3FB0),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -301,7 +301,7 @@ class _HomeContentState extends State<HomeContent> {
         height: 200,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+            colors: [Color(0xFF6E3FB0), Color(0xFFE4406C)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -317,7 +317,7 @@ class _HomeContentState extends State<HomeContent> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+          colors: [Color(0xFF6E3FB0), Color(0xFFE4406C)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -446,19 +446,19 @@ class _HomeContentState extends State<HomeContent> {
           _buildMetricRow(
             label: 'AI Detection',
             value: safetyService.aiDetectionScore,
-            color: const Color(0xFF7C3AED),
+            color: const Color(0xFF8A3FFC),
           ),
           const SizedBox(height: 8),
           _buildMetricRow(
             label: 'SOS Response',
             value: safetyService.sosResponseScore,
-            color: const Color(0xFFEC4899),
+            color: const Color(0xFFE4406C),
           ),
           const SizedBox(height: 8),
           _buildMetricRow(
             label: 'Community Trust',
             value: safetyService.communityTrustScore,
-            color: const Color(0xFFFF8A65),
+            color: const Color(0xFFFF8A5B),
           ),
         ],
       ),
@@ -564,10 +564,10 @@ class _HomeContentState extends State<HomeContent> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFEC4899).withOpacity(0.1),
+              color: const Color(0xFFE4406C).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFFEC4899), size: 20),
+            child: Icon(icon, color: const Color(0xFFE4406C), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(

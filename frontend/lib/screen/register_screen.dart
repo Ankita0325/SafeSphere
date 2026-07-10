@@ -27,17 +27,17 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   late Animation<Offset> _slideAnimation;
   late AnimationController _pulseController;
 
-  static const Color primaryDark = Color(0xFF0A0915);
-  static const Color appBackgroundStart = Color(0xFF121026);
-  static const Color appBackgroundEnd = Color(0xFF161330);
-  static const Color cardBackground = Color(0xFF1E1B4B);
-  static const Color vibrantPink = Color(0xFFD92662);
-  static const Color vibrantPinkLight = Color(0xFFE11D48);
-  static const Color purpleAccent = Color(0xFF7C3AED);
-  static const Color highRiskRed = Color(0xFFEF4444);
-  static const Color lowRiskGreen = Color(0xFF10B981);
+  static const Color primaryDark = Color(0xFF09061F);
+  static const Color appBackgroundStart = Color(0xFF09061F);
+  static const Color appBackgroundEnd = Color(0xFF150F2B);
+  static const Color cardBackground = Color(0xFF2A233C);
+  static const Color vibrantPink = Color(0xFFE4406C);
+  static const Color vibrantPinkLight = Color(0xFFFF4D8A);
+  static const Color purpleAccent = Color(0xFF6E3FB0);
+  static const Color highRiskRed = Color(0xFFF44336);
+  static const Color lowRiskGreen = Color(0xFF46D369);
   static const Color primaryText = Color(0xFFFFFFFF);
-  static const Color secondaryText = Color(0xFF9CA3AF);
+  static const Color secondaryText = Color(0xFFD6D2E8);
 
   @override
   void initState() {

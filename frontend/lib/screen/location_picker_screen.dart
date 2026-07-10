@@ -22,9 +22,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Location'),
-        backgroundColor: const Color(0xFFFF4081),
+        title: const Text(
+          'Select Location',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: const Color(0xFF6E3FB0),
         foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
         actions: [
           TextButton(
             onPressed: _selectedLocation != null
