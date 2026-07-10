@@ -41,22 +41,21 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     final user = authService.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text(
           'My Profile',
           style: TextStyle(
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
+        backgroundColor: const Color(0xFF6E3FB0),
+        foregroundColor: Colors.white,
         elevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 18),
+          icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [

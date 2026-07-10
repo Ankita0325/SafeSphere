@@ -97,7 +97,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
           'SOS Emergency',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: const Color(0xFF6E3FB0),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [

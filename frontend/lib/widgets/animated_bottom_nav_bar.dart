@@ -89,11 +89,11 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar> {
     final isSelected = widget.currentIndex == index;
 
     final activeHighlightColor = isSelected
-        ? (theme.brightness == Brightness.dark ? const Color(0xFFEC4899).withOpacity(0.15) : const Color(0xFF7C3AED).withOpacity(0.1))
+        ? theme.colorScheme.primary.withOpacity(0.15)
         : Colors.transparent;
     final iconColor = isSelected
-        ? (theme.brightness == Brightness.dark ? const Color(0xFFEC4899) : const Color(0xFF7C3AED))
-        : (theme.brightness == Brightness.dark ? const Color(0xFFCBD5E1) : Colors.grey.shade600);
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface.withOpacity(0.6);
 
     return GestureDetector(
       onTap: () => widget.onTap(index),
@@ -138,15 +138,15 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFEF4444), Color(0xFFEC4899)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          gradient: const RadialGradient(
+            colors: [Color(0xFFFF6254), Color(0xFFF44336), Color(0xFFB71C1C)],
+            center: Alignment.center,
+            radius: 0.85,
           ),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFEF4444).withOpacity(0.4),
+              color: const Color(0xFFF44336).withOpacity(0.4),
               blurRadius: isSelected ? 18 : 12,
               spreadRadius: isSelected ? 4 : 2,
             ),

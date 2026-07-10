@@ -48,25 +48,31 @@ async def get_safety_metrics(lat: float = 19.0760, lng: float = 72.8777):
         community_trust_score = min(100, community_trust_score + min(20, len(total_reports)))
         
         # 6. Calculate AI Detection Score (based on AI confidence and spam/duplicate detection rate)
-        ai_analysis_results = []
-        for incident in incidents[:10]:  # Analyze up to 10 recent incidents
-            try:
-                analysis = ai_service.analyze_safety({
-                    'lat': incident.get('latitude', lat),
-                    'lng': incident.get('longitude', lng),
-                    'time': incident.get('timestamp', '')
-                })
-                if 'error' not in analysis:
-                    ai_analysis_results.add(analysis.get('safety_score', 50))
-            except Exception:
-                pass
-        
-        ai_detection_score = 100
-        if ai_analysis_results:
-            ai_detection_score = sum(ai_analysis_results) / len(ai_analysis_results)
-        # Factor in spam/duplicate detection capability
-        spam_duplicates_detected = len([i for i in incidents if i.get('ai_analysis', {}).get('is_spam', False) or i.get('ai_analysis', {}).get('is_duplicate', False)])
-        ai_detection_score = min(100, max(50, ai_detection_score))
+        ai_detection_score = 85.0
+        try:
+            incident_summaries = [
+                {
+                    'type': inc.get('incident_type', 'unknown'),
+                    'severity': inc.get('severity', 'medium'),
+                    'latitude': inc.get('latitude', 0),
+                    'longitude': inc.get('longitude', 0)
+                }
+                for inc in incidents[:5]
+            ]
+            
+            analysis = ai_service.analyze_safety({
+                'lat': lat,
+                'lng': lng,
+                'time': datetime.now().isoformat(),
+                'incidents': incident_summaries
+            })
+            if isinstance(analysis, dict) and 'error' not in analysis:
+                ai_detection_score = float(analysis.get('safety_score', 85.0))
+        except Exception as e:
+            logger.error(f"Error in batch AI safety analysis: {str(e)}")
+            ai_detection_score = 85.0
+
+        ai_detection_score = min(100.0, max(50.0, ai_detection_score))
         
         # 7. Calculate Trust Level (composite decision score)
         trust_score = (

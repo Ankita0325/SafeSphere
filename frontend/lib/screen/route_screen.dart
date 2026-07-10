@@ -1178,7 +1178,7 @@ TileLayer(
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+                                  colors: [Color(0xFF6E3FB0), Color(0xFFE4406C)],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),

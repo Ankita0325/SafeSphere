@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../utils/theme.dart';
 import 'my_profile_screen.dart';
 import 'emergency_contacts_screen.dart';
 import 'emergency_history_screen.dart';
@@ -23,42 +24,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = authService.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text(
           'Profile & Settings',
           style: TextStyle(
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
-            color: Colors.black87,
-            letterSpacing: -0.5,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
+        backgroundColor: const Color(0xFF6E3FB0),
+        foregroundColor: Colors.white,
         elevation: 0,
-        centerTitle: false,
-        leading: Container(
-          margin: const EdgeInsets.only(left: 8),
-          child: IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    spreadRadius: 1,
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.arrow_back_ios, size: 18),
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
@@ -68,15 +49,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             const SizedBox(height: 8),
 
-            // Profile Header - Clean White Card
+            // Profile Header - Dark Neon Card
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withOpacity(0.2),
                     spreadRadius: 0,
                     blurRadius: 20,
                     offset: const Offset(0, 2),
@@ -91,14 +72,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFF7C3AED).withOpacity(0.2),
+                          color: AppTheme.accentPink.withOpacity(0.2),
                           width: 3,
                         ),
                       ),
                       child: CircleAvatar(
                         radius: 42,
                         backgroundColor:
-                            const Color(0xFF7C3AED).withOpacity(0.1),
+                            AppTheme.accentPink.withOpacity(0.1),
                         child: Text(
                           user?.name.isNotEmpty == true
                               ? user!.name[0].toUpperCase()
@@ -106,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF7C3AED),
+                            color: AppTheme.accentPink,
                           ),
                         ),
                       ),
@@ -121,24 +102,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black87,
+                              color: Colors.white,
                               letterSpacing: -0.5,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.phone_android,
-                                color: Colors.grey[600],
+                                color: AppTheme.textSecondary,
                                 size: 14,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 user?.phone ?? 'No phone',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey[600],
+                                  color: AppTheme.textSecondary,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -151,22 +132,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF7C3AED).withOpacity(0.1),
+                              color: AppTheme.accentPink.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: [
+                              children: const [
                                 Icon(
                                   Icons.verified,
-                                  color: const Color(0xFF7C3AED),
+                                  color: AppTheme.accentPink,
                                   size: 14,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Verified',
                                   style: TextStyle(
-                                    color: const Color(0xFF7C3AED),
+                                    color: AppTheme.accentPink,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -192,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF7C3AED),
+                  color: AppTheme.accentPink,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -202,11 +183,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Menu Items - Attractive Card
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withOpacity(0.2),
                     spreadRadius: 0,
                     blurRadius: 20,
                     offset: const Offset(0, 2),
@@ -215,66 +196,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Column(
                 children: [
-_buildMenuItem(
-                     icon: Icons.person_outline,
-                     title: 'My Profile',
-                     subtitle: 'View and edit personal info',
-                     onTap: () {
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(builder: (_) => const MyProfileScreen()),
-                       );
-                     },
-                     isFirst: true,
-                   ),
-                   _buildDivider(),
-                   _buildMenuItem(
-                     icon: Icons.people_outline,
-                     title: 'Emergency Contacts',
-                     subtitle: 'Manage your emergency contacts',
-                     onTap: () {
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(builder: (_) => const EmergencyContactsScreen()),
-                       );
-                     },
-                   ),
+                  _buildMenuItem(
+                    icon: Icons.person_outline,
+                    title: 'My Profile',
+                    subtitle: 'View and edit personal info',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MyProfileScreen()),
+                      );
+                    },
+                    isFirst: true,
+                  ),
                   _buildDivider(),
-_buildMenuItem(
-                     icon: Icons.history_outlined,
-                     title: 'Emergency History',
-                     subtitle: 'View your emergency alerts',
-                     onTap: () {
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(builder: (_) => const EmergencyHistoryScreen()),
-                       );
-                     },
-                   ),
-                   _buildDivider(),
-                   _buildMenuItem(
-                     icon: Icons.notifications_outlined,
-                     title: 'Notifications',
-                     subtitle: 'Manage notification preferences',
-                     onTap: () {
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                       );
-                     },
-                   ),
-                   _buildDivider(),
-                   _buildMenuItem(
-                     icon: Icons.location_on_outlined,
-                     title: 'Location Settings',
-                     subtitle: 'Manage location permissions',
-                     onTap: () {
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(builder: (_) => const LocationSettingsScreen()),
-                       );
-                     },
-                   ),
+                  _buildMenuItem(
+                    icon: Icons.people_outline,
+                    title: 'Emergency Contacts',
+                    subtitle: 'Manage your emergency contacts',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const EmergencyContactsScreen()),
+                      );
+                    },
+                  ),
+                  _buildDivider(),
+                  _buildMenuItem(
+                    icon: Icons.history_outlined,
+                    title: 'Emergency History',
+                    subtitle: 'View your emergency alerts',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const EmergencyHistoryScreen()),
+                      );
+                    },
+                  ),
+                  _buildDivider(),
+                  _buildMenuItem(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notifications',
+                    subtitle: 'Manage notification preferences',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                      );
+                    },
+                  ),
+                  _buildDivider(),
+                  _buildMenuItem(
+                    icon: Icons.location_on_outlined,
+                    title: 'Location Settings',
+                    subtitle: 'Manage location permissions',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LocationSettingsScreen()),
+                      );
+                    },
+                  ),
                   _buildDivider(),
                   _buildMenuItem(
                     icon: Icons.security_outlined,
@@ -294,12 +275,12 @@ _buildMenuItem(
                       secondary: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF7C3AED).withOpacity(0.1),
+                          color: AppTheme.accentPink.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.developer_mode,
-                          color: const Color(0xFF7C3AED),
+                          color: AppTheme.accentPink,
                           size: 22,
                         ),
                       ),
@@ -308,20 +289,20 @@ _buildMenuItem(
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
-                      subtitle: Text(
+                      subtitle: const Text(
                         'Bypass FastAPI for offline presentation',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[500],
+                          color: AppTheme.textSecondary,
                         ),
                       ),
                       value: authService.useMockBackend,
-                      activeColor: const Color(0xFF7C3AED),
+                      activeColor: AppTheme.accentPink,
                       activeTrackColor:
-                          const Color(0xFF7C3AED).withOpacity(0.3),
+                          AppTheme.accentPink.withOpacity(0.3),
                       onChanged: (bool value) {
                         authService.toggleBackendMode(value);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -457,12 +438,12 @@ _buildMenuItem(
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF7C3AED).withOpacity(0.1),
+            color: AppTheme.accentPink.withOpacity(0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF7C3AED),
+            color: AppTheme.accentPink,
             size: 22,
           ),
         ),
@@ -471,28 +452,28 @@ _buildMenuItem(
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
         subtitle: subtitle != null
             ? Text(
                 subtitle,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[500],
+                  color: AppTheme.textSecondary,
                 ),
               )
             : null,
         trailing: Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: AppTheme.secondaryBackground,
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: const Icon(
             Icons.chevron_right,
             size: 20,
-            color: Colors.grey[400],
+            color: AppTheme.textSecondary,
           ),
         ),
         onTap: onTap,
@@ -502,10 +483,10 @@ _buildMenuItem(
   }
 
   Widget _buildDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
       thickness: 1,
-      color: Colors.grey[100],
+      color: AppTheme.divider,
       indent: 68,
     );
   }

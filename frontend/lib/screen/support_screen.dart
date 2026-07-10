@@ -12,9 +12,10 @@ class SupportScreen extends StatelessWidget {
           'Support & Resources',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: const Color(0xFFFF4081),
+        backgroundColor: const Color(0xFF6E3FB0),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -274,7 +275,7 @@ class SupportScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: const Color(0xFFFF4081)),
+                Icon(icon, color: const Color(0xFFE4406C)),
                 const SizedBox(width: 8),
                 Text(
                   title,

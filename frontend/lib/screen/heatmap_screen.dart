@@ -725,10 +725,12 @@ class _HeatmapScreenState extends State<HeatmapScreen> {
       appBar: AppBar(
         title: Text(
           'AI Safety Heatmap',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: const Color(0xFF6E3FB0),
+        foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

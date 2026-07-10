@@ -170,9 +170,14 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Community'),
-        backgroundColor: const Color(0xFFFF4081),
+        title: const Text(
+          'Community',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: const Color(0xFF6E3FB0),
         foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline),
@@ -248,7 +253,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       child: ElevatedButton(
                         onPressed: _submitReport,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF4081),
+                          backgroundColor: const Color(0xFFE4406C),
                           foregroundColor: Colors.white,
                         ),
                         child: const Text('Submit Report'),

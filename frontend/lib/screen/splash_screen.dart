@@ -58,8 +58,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0F172A),
-              Color(0xFF1E293B),
+              Color(0xFF09061F),
+              Color(0xFF150F2B),
             ],
           ),
         ),
@@ -70,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const Icon(
                 Icons.security_rounded,
                 size: 80,
-                color: Color(0xFF7C3AED),
+                color: Color(0xFFE4406C),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -86,12 +86,12 @@ class _SplashScreenState extends State<SplashScreen> {
                 'Your Safety Matters',
                 style: TextStyle(
                   fontSize: 18,
-                  color: Color(0xFFCBD5E1),
+                  color: Color(0xFFD6D2E8),
                 ),
               ),
               const SizedBox(height: 40),
               const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7C3AED)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE4406C)),
               ),
             ],
           ),
