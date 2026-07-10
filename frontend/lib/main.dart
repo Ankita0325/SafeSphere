@@ -12,6 +12,7 @@ import 'services/emergency_service.dart';
 import 'services/voice_service.dart';
 import 'services/sms_service.dart';
 import 'services/route_service.dart';
+import 'services/safety_score_service.dart';
 
 // Import screens
 import 'screen/splash_screen.dart';
@@ -55,6 +56,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => VoiceService()),
         ChangeNotifierProvider(create: (_) => SmsService()),
         ChangeNotifierProvider(create: (_) => RouteService()),
+        ChangeNotifierProvider(create: (_) => SafetyScoreService()),
       ],
       child: MaterialApp(
         title: 'SafeSphere',
