@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/safety_score_service.dart';
+import '../services/location_service.dart';
+import '../services/api_service.dart';
 import '../widgets/animated_bottom_nav_bar.dart';
 import 'route_screen.dart';
 import 'emergency_screen.dart';
@@ -56,21 +59,131 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Home Content Widget
-class HomeContent extends StatelessWidget {
+// Home Content Widget – welcome card removed
+class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
   @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  List<Map<String, dynamic>> _notifications = [];
+  bool _isLoadingNotifications = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchSafetyData();
+    });
+  }
+
+  Future<void> _fetchSafetyData() async {
+    final safetyService = Provider.of<SafetyScoreService>(context, listen: false);
+    final locationService = Provider.of<LocationService>(context, listen: false);
+    
+    try {
+      if (locationService.currentPosition != null) {
+        await safetyService.fetchSafetyMetrics(
+          lat: locationService.currentPosition!.latitude,
+          lng: locationService.currentPosition!.longitude,
+        );
+        await _fetchRecentReports(safetyService.latitude ?? 19.0760, safetyService.longitude ?? 72.8777);
+      } else {
+        await safetyService.fetchSafetyMetrics();
+        await _fetchRecentReports();
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<void> _fetchRecentReports([double lat = 19.0760, double lng = 72.8777]) async {
+    final apiService = ApiService();
+    try {
+      final response = await apiService.get(
+        '/reports/incidents?lat=$lat&lng=$lng&radius=10&limit=5',
+      );
+      final reports = response['incidents'] as List?;
+      if (reports != null && mounted) {
+        setState(() {
+          _notifications = reports.map((e) => Map<String, dynamic>.from(e)).toList();
+          _isLoadingNotifications = false;
+        });
+      }
+    } catch (e) {
+      // Use fallback mock data when API fails
+      if (mounted) {
+        setState(() {
+          _notifications = [
+            {
+              'incident_type': 'Harassment',
+              'address': 'Andheri Station',
+              'timestamp': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+            },
+            {
+              'incident_type': 'Stalking',
+              'address': 'Bandra West',
+              'timestamp': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+            },
+          ];
+          _isLoadingNotifications = false;
+        });
+      }
+    }
+  }
+
+  String _getTimeAgo(String timestamp) {
+    try {
+      final time = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final diff = now.difference(time);
+      if (diff.inDays > 0) return '${diff.inDays}d ago';
+      if (diff.inHours > 0) return '${diff.inHours}h ago';
+      if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+      return 'Just now';
+    } catch (_) {
+      return 'Recently';
+    }
+  }
+
+  Color _getNotificationColor(String incidentType) {
+    final type = incidentType.toLowerCase();
+    if (type.contains('harassment') || type.contains('assault')) {
+      return Colors.red;
+    }
+    if (type.contains('theft') || type.contains('stalking')) {
+      return Colors.orange;
+    }
+    return Colors.blue;
+  }
+
+  Color _getTrustColor(String color) {
+    switch (color.toLowerCase()) {
+      case 'green':
+        return Colors.green;
+      case 'yellow':
+        return Colors.yellow;
+      case 'orange':
+        return Colors.orange;
+      case 'red':
+        return Colors.red;
+      default:
+        return Colors.yellow;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context);
-    final user = authService.currentUser;
+    final safetyService = Provider.of<SafetyScoreService>(context);
 
     return Scaffold(
       appBar: AppBar(
-title: const Text(
-           'SafeSphere',
-           style: TextStyle(fontWeight: FontWeight.w600),
-         ),
+        title: const Text(
+          'Women Safety App',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: const Color(0xFF7C3AED),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -85,8 +198,7 @@ title: const Text(
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Refresh logic
-          await Future.delayed(const Duration(seconds: 1));
+          await _fetchSafetyData();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -94,85 +206,8 @@ title: const Text(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            user?.name.isNotEmpty == true
-                                ? user!.name[0].toUpperCase()
-                                : 'U',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF7C3AED),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hello, ${user?.name ?? 'User'}!',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Text(
-                                'Stay safe and aware',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        _buildStatusChip(
-                          icon: Icons.check_circle,
-                          label: 'Safe Zone',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildStatusChip(
-                          icon: Icons.shield,
-                          label: 'Protected',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildStatusChip(
-                          icon: Icons.location_on,
-                          label: 'Active',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+              _buildSafetyScore(safetyService),
+              const SizedBox(height: 16),
 
               // Quick Actions
               const Text(
@@ -200,11 +235,11 @@ title: const Text(
                     },
                   ),
                   _buildQuickAction(
-                    icon: Icons.people,
-                    label: 'Community',
+                    icon: Icons.support_agent,
+                    label: 'Support',
                     color: Colors.purple,
                     onTap: () {
-                      Navigator.pushNamed(context, '/community');
+                      Navigator.pushNamed(context, '/support');
                     },
                   ),
                 ],
@@ -234,8 +269,7 @@ title: const Text(
                     _buildSafetyTip(
                       icon: Icons.share_location,
                       title: 'Share your location',
-                      description:
-                          'Share your live location with trusted contacts',
+                      description: 'Share your live location with trusted contacts',
                     ),
                     const Divider(),
                     _buildSafetyTip(
@@ -260,38 +294,220 @@ title: const Text(
     );
   }
 
-  Widget _buildStatusChip({
-    required IconData icon,
-    required String label,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 16,
+  // ✅ Safety Score Widget – with gradient background
+  Widget _buildSafetyScore(SafetyScoreService safetyService) {
+    if (safetyService.isLoading) {
+      return Container(
+        height: 200,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row with circular score and labels
+          Row(
+            children: [
+              // Circular progress with score
+              SizedBox(
+                width: 70,
+                height: 70,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CircularProgressIndicator(
+                      value: safetyService.overallScore / 100,
+                      strokeWidth: 6,
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Colors.white,
+                      ),
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${safetyService.overallScore}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const Text(
+                            '/ 100',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Safety Score',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          safetyService.overallScore >= 70
+                              ? Icons.trending_up
+                              : Icons.trending_down,
+                          color: safetyService.overallScore >= 70
+                              ? Colors.green
+                              : Colors.orange,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          safetyService.safetyStatus,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withOpacity(0.85),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _getTrustColor(safetyService.trustColor)
+                            .withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: _getTrustColor(safetyService.trustColor)
+                                .withOpacity(0.5)),
+                      ),
+                      child: Text(
+                        'Trust: ${safetyService.trustLevel}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Divider(color: Colors.white.withOpacity(0.3), thickness: 1),
+          const SizedBox(height: 8),
+
+          // Metric rows with progress bars – using distinct colours
+          _buildMetricRow(
+            label: 'AI Detection',
+            value: safetyService.aiDetectionScore,
+            color: const Color(0xFF7C3AED),
+          ),
+          const SizedBox(height: 8),
+          _buildMetricRow(
+            label: 'SOS Response',
+            value: safetyService.sosResponseScore,
+            color: const Color(0xFFEC4899),
+          ),
+          const SizedBox(height: 8),
+          _buildMetricRow(
+            label: 'Community Trust',
+            value: safetyService.communityTrustScore,
+            color: const Color(0xFFFF8A65),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildMetricRow({
+    required String label,
+    required int value,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withOpacity(0.9),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: value / 100,
+              backgroundColor: Colors.white.withOpacity(0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 6,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$value%',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ---- Helper widgets ----
   Widget _buildQuickAction({
     required IconData icon,
     required String label,
@@ -319,11 +535,7 @@ title: const Text(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: color,
-              ),
+              child: Icon(icon, size: 32, color: color),
             ),
             const SizedBox(height: 8),
             Text(
@@ -355,11 +567,7 @@ title: const Text(
               color: const Color(0xFFEC4899).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFFEC4899),
-              size: 20,
-            ),
+            child: Icon(icon, color: const Color(0xFFEC4899), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -401,7 +609,7 @@ title: const Text(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Notifications',
+              'Recent Community Reports',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -409,25 +617,39 @@ title: const Text(
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView(
-                children: const [
-                  ListTile(
-                    leading: Icon(Icons.security, color: Colors.green),
-                    title: Text('Safety Tip: Share your location'),
-                    subtitle: Text('2 hours ago'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.sos, color: Colors.red),
-                    title: Text('Emergency drill completed'),
-                    subtitle: Text('5 hours ago'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.people, color: Colors.blue),
-                    title: Text('Community update'),
-                    subtitle: Text('1 day ago'),
-                  ),
-                ],
-              ),
+              child: _isLoadingNotifications
+                  ? const Center(child: CircularProgressIndicator())
+                  : _notifications.isEmpty
+                      ? const Center(
+                          child: Text('No recent reports'),
+                        )
+                      : ListView.builder(
+                          itemCount: _notifications.length,
+                          itemBuilder: (context, index) {
+                            final report = _notifications[index];
+                            return ListTile(
+                              leading: Icon(
+                                Icons.report,
+                                color: _getNotificationColor(
+                                    report['incident_type'] ?? ''),
+                              ),
+                              title: Text(
+                                report['incident_type'] ?? 'Incident Reported',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              subtitle: Text(
+                                report['address'] ?? 'Nearby location',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: Text(
+                                _getTimeAgo(report['timestamp'] ?? ''),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
