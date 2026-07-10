@@ -21,8 +21,8 @@ from app.routes import auth, emergency, reports, routes_ai, admin, analytics
 def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
     app = FastAPI(
-        title="Women Safety API",
-        description="Comprehensive API for Women Safety Application",
+        title="SafeSphere API",
+        description="Comprehensive API for SafeSphere",
         version="2.0.0",
         docs_url="/api/docs",
         redoc_url="/api/redoc",

@@ -673,8 +673,10 @@ class _EmergencyScreenState extends State<EmergencyScreen>
     });
 
     try {
-      final emergencyService = Provider.of<EmergencyService>(context, listen: false);
-      final locationService = Provider.of<LocationService>(context, listen: false);
+      final emergencyService =
+          Provider.of<EmergencyService>(context, listen: false);
+      final locationService =
+          Provider.of<LocationService>(context, listen: false);
 
       final position = await locationService.getCurrentPosition();
       final prefs = await SharedPreferences.getInstance();
@@ -726,12 +728,44 @@ class _EmergencyScreenState extends State<EmergencyScreen>
       if (status.isGranted) {
         try {
           await voiceService.startListening(
-            onKeywordDetected: (keyword) {
-              if (mounted) {
+            onKeywordDetected: (keyword) async {
+              // Backend authoritative check before triggering SOS
+              if (!mounted) return;
+              try {
+                final emergencyService =
+                    Provider.of<EmergencyService>(context, listen: false);
+
                 setState(() {
-                  _voiceStatus = '🚨 Emergency keyword detected: $keyword';
+                  _voiceStatus =
+                      '🚨 Keyword detected locally: $keyword (verifying...)';
                 });
-                _sendSOS(context);
+
+                final recognizedText = voiceService.recognizedText;
+                final response =
+                    await emergencyService.detectVoiceEmergency(recognizedText);
+
+                final emergencyDetected =
+                    response['emergency_detected'] == true;
+
+                if (!mounted) return;
+
+                if (emergencyDetected) {
+                  setState(() {
+                    _voiceStatus =
+                        '✅ Backend confirmed emergency keywords: $keyword';
+                  });
+                  _sendSOS(context);
+                } else {
+                  setState(() {
+                    _voiceStatus =
+                        '⚠️ Backend did not confirm emergency keywords';
+                  });
+                }
+              } catch (e) {
+                if (!mounted) return;
+                setState(() {
+                  _voiceStatus = '❌ Error verifying voice emergency: $e';
+                });
               }
             },
             onResult: (text) {

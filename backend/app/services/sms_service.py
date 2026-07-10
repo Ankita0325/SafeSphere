@@ -72,7 +72,7 @@ Stay safe and be aware of your surroundings.
         """Send verification code via SMS"""
         try:
             message = f"""
-Your Women Safety App verification code is: {code}
+Your SafeSphere verification code is: {code}
 
 This code will expire in 10 minutes.
 Do not share this code with anyone.
@@ -117,7 +117,7 @@ Please respond immediately!
             message = f"""
 Hi {user_name},
 
-This is a health check from Women Safety App.
+This is a health check from SafeSphere.
 Are you safe?
 
 Reply SAFE if you're okay.
@@ -141,7 +141,7 @@ Reply HELP if you need assistance.
 
 {tip}
 
-Stay safe with Women Safety App!
+Stay safe with SafeSphere!
 """
             self.client.messages.create(
                 body=message,
@@ -173,7 +173,7 @@ https://maps.google.com/?q={location.get('lat')},{location.get('lng')}
 📱 Phone: {user_data.get('phone', 'Unknown')}
 
 ⚠️ Please contact immediately!
-This is an emergency alert from Women Safety App.
+This is an emergency alert from SafeSphere.
 
 --- This is an automated emergency message ---
 """
