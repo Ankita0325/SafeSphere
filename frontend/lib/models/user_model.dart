@@ -8,6 +8,8 @@ class UserModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isVerified;
+  final DateTime? signupDate;
+  final int sosTriggerCount;
 
   UserModel({
     required this.uid,
@@ -19,6 +21,8 @@ class UserModel {
     required this.createdAt,
     required this.updatedAt,
     this.isVerified = false,
+    this.signupDate,
+    this.sosTriggerCount = 0,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,10 @@ class UserModel {
       updatedAt: DateTime.parse(
           json['updated_at'] ?? DateTime.now().toIso8601String()),
       isVerified: json['is_verified'] ?? false,
+      signupDate: json['signup_date'] != null 
+          ? DateTime.parse(json['signup_date']) 
+          : (json['created_at'] != null ? DateTime.parse(json['created_at']) : null),
+      sosTriggerCount: json['sos_trigger_count'] ?? 0,
     );
   }
 
@@ -51,6 +59,8 @@ class UserModel {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'is_verified': isVerified,
+      'signup_date': signupDate?.toIso8601String(),
+      'sos_trigger_count': sosTriggerCount,
     };
   }
 }

@@ -46,6 +46,8 @@ class AuthService extends ChangeNotifier {
           final userPhone = prefs.getString(AppConstants.PREF_USER_PHONE) ?? '';
 
           if (userId.isNotEmpty) {
+            final signupDate = prefs.getString('user_signup_date');
+            final sosCount = prefs.getInt(AppConstants.PREF_SOS_TRIGGER_COUNT) ?? 0;
             _currentUser = UserModel(
               uid: userId,
               email: userEmail,
@@ -56,6 +58,8 @@ class AuthService extends ChangeNotifier {
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
               isVerified: false,
+              signupDate: signupDate != null ? DateTime.parse(signupDate) : null,
+              sosTriggerCount: sosCount,
             );
           }
         }
@@ -595,6 +599,8 @@ class AuthService extends ChangeNotifier {
           createdAt: _currentUser!.createdAt,
           updatedAt: DateTime.now(),
           isVerified: _currentUser!.isVerified,
+          signupDate: _currentUser!.signupDate,
+          sosTriggerCount: _currentUser!.sosTriggerCount,
         );
 
         final prefs = await SharedPreferences.getInstance();
@@ -603,6 +609,9 @@ class AuthService extends ChangeNotifier {
             AppConstants.PREF_USER_EMAIL, _currentUser!.email);
         await prefs.setString(
             AppConstants.PREF_USER_PHONE, _currentUser!.phone);
+        if (_currentUser!.signupDate != null) {
+          await prefs.setString('user_signup_date', _currentUser!.signupDate!.toIso8601String());
+        }
 
         notifyListeners();
         print('✅ Profile updated successfully');

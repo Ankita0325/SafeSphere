@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import 'dart:ui';
+import 'my_profile_screen.dart';
+import 'emergency_contacts_screen.dart';
+import 'emergency_history_screen.dart';
+import 'notifications_screen.dart';
+import 'location_settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -211,51 +215,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Column(
                 children: [
-                  _buildMenuItem(
-                    icon: Icons.person_outline,
-                    title: 'My Profile',
-                    subtitle: 'View and edit personal info',
-                    onTap: () {
-                      _showComingSoon(context);
-                    },
-                    isFirst: true,
-                  ),
+_buildMenuItem(
+                     icon: Icons.person_outline,
+                     title: 'My Profile',
+                     subtitle: 'View and edit personal info',
+                     onTap: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(builder: (_) => const MyProfileScreen()),
+                       );
+                     },
+                     isFirst: true,
+                   ),
+                   _buildDivider(),
+                   _buildMenuItem(
+                     icon: Icons.people_outline,
+                     title: 'Emergency Contacts',
+                     subtitle: 'Manage your emergency contacts',
+                     onTap: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(builder: (_) => const EmergencyContactsScreen()),
+                       );
+                     },
+                   ),
                   _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.people_outline,
-                    title: 'Emergency Contacts',
-                    subtitle: 'Manage your emergency contacts',
-                    onTap: () {
-                      _showComingSoon(context);
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.history_outlined,
-                    title: 'Emergency History',
-                    subtitle: 'View your emergency alerts',
-                    onTap: () {
-                      _showComingSoon(context);
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.notifications_outlined,
-                    title: 'Notifications',
-                    subtitle: 'Manage notification preferences',
-                    onTap: () {
-                      _showComingSoon(context);
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.location_on_outlined,
-                    title: 'Location Settings',
-                    subtitle: 'Manage location permissions',
-                    onTap: () {
-                      _showComingSoon(context);
-                    },
-                  ),
+_buildMenuItem(
+                     icon: Icons.history_outlined,
+                     title: 'Emergency History',
+                     subtitle: 'View your emergency alerts',
+                     onTap: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(builder: (_) => const EmergencyHistoryScreen()),
+                       );
+                     },
+                   ),
+                   _buildDivider(),
+                   _buildMenuItem(
+                     icon: Icons.notifications_outlined,
+                     title: 'Notifications',
+                     subtitle: 'Manage notification preferences',
+                     onTap: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                       );
+                     },
+                   ),
+                   _buildDivider(),
+                   _buildMenuItem(
+                     icon: Icons.location_on_outlined,
+                     title: 'Location Settings',
+                     subtitle: 'Manage location permissions',
+                     onTap: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(builder: (_) => const LocationSettingsScreen()),
+                       );
+                     },
+                   ),
                   _buildDivider(),
                   _buildMenuItem(
                     icon: Icons.security_outlined,

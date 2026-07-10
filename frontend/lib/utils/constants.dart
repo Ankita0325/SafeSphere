@@ -30,4 +30,5 @@ class AppConstants {
   static const String PREF_USER_PHONE = 'user_phone';
   static const String PREF_AUTH_TOKEN = 'auth_token';
   static const String PREF_IS_LOGGED_IN = 'is_logged_in';
+  static const String PREF_SOS_TRIGGER_COUNT = 'sos_trigger_count';
 }
