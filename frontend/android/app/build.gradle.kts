@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.womensafety.women_safety_app"
+    namespace = "com.womensafety.safesphere"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.womensafety.women_safety_app"
+        applicationId = "com.womensafety.safesphere"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

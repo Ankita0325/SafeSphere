@@ -61,7 +61,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               children: [
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.womensafety.women_safety_app',
+                  userAgentPackageName: 'com.womensafety.safesphere',
                 ),
                 if (_selectedLocation != null)
                   MarkerLayer(

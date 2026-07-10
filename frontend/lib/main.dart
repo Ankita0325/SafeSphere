@@ -52,10 +52,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RouteService()),
       ],
       child: MaterialApp(
-        title: 'Women Safety App',
+        title: 'SafeSphere',
         theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         routes: {

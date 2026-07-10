@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.womensafety" "\0"
-            VALUE "FileDescription", "women_safety_app" "\0"
-            VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "women_safety_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.womensafety. All rights reserved." "\0"
-            VALUE "OriginalFilename", "women_safety_app.exe" "\0"
-            VALUE "ProductName", "women_safety_app" "\0"
+VALUE "FileDescription", "SafeSphere" "\0"
+             VALUE "FileVersion", VERSION_AS_STRING "\0"
+             VALUE "InternalName", "SafeSphere" "\0"
+             VALUE "LegalCopyright", "Copyright (C) 2026 com.womensafety. All rights reserved." "\0"
+             VALUE "OriginalFilename", "SafeSphere.exe" "\0"
+             VALUE "ProductName", "SafeSphere" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
