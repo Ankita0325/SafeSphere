@@ -94,6 +94,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildBackendModeToggle(authService),
+                      const SizedBox(height: 24),
                       _buildHeader(),
                       const SizedBox(height: 32),
                       _buildNameField(),
@@ -120,6 +122,57 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                 ),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackendModeToggle(AuthService authService) {
+    final useMock = authService.useMockBackend;
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          authService.toggleBackendMode(!useMock);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: useMock ? vibrantPink.withOpacity(0.1) : purpleAccent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: useMock ? vibrantPink.withOpacity(0.3) : purpleAccent.withOpacity(0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                useMock ? Icons.dashboard_customize_outlined : Icons.cloud_done_outlined,
+                color: useMock ? vibrantPinkLight : Colors.lightBlueAccent,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                useMock ? 'Demo Mode (Mock Backend)' : 'Production (Firebase Auth)',
+                style: TextStyle(
+                  color: useMock ? vibrantPinkLight : Colors.lightBlueAccent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: useMock ? vibrantPinkLight : Colors.greenAccent,
+                ),
+              ),
+            ],
           ),
         ),
       ),

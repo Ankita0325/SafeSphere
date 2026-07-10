@@ -91,6 +91,8 @@ class _LoginScreenState extends State<LoginScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildBackendModeToggle(authService),
+                      const SizedBox(height: 24),
                       _buildHeader(),
                       const SizedBox(height: 40),
                       _buildEmailField(),
@@ -100,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen>
                       if (authService.error != null)
                         _buildErrorMessage(authService.error!),
                       const SizedBox(height: 20),
-                      _buildLoginButton(),
+                      _buildLoginButton(authService),
                       const SizedBox(height: 20),
                       _buildFooter(),
                     ],
@@ -108,6 +110,57 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackendModeToggle(AuthService authService) {
+    final useMock = authService.useMockBackend;
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          authService.toggleBackendMode(!useMock);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: useMock ? vibrantPink.withOpacity(0.1) : purpleAccent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: useMock ? vibrantPink.withOpacity(0.3) : purpleAccent.withOpacity(0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                useMock ? Icons.dashboard_customize_outlined : Icons.cloud_done_outlined,
+                color: useMock ? vibrantPinkLight : Colors.lightBlueAccent,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                useMock ? 'Demo Mode (Mock Backend)' : 'Production (Firebase Auth)',
+                style: TextStyle(
+                  color: useMock ? vibrantPinkLight : Colors.lightBlueAccent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: useMock ? vibrantPinkLight : Colors.greenAccent,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -150,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen>
               );
             },
           ),
-const SizedBox(height: 16),
+          const SizedBox(height: 16),
           const Text(
             'SafeSphere',
             style: TextStyle(
@@ -310,12 +363,12 @@ const SizedBox(height: 16),
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildLoginButton(AuthService authService) {
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleLogin,
+        onPressed: authService.isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: vibrantPink,
           foregroundColor: Colors.white,
@@ -325,7 +378,7 @@ const SizedBox(height: 16),
           elevation: 8,
           shadowColor: vibrantPink.withOpacity(0.4),
         ),
-        child: _isLoading
+        child: authService.isLoading
             ? const LoadingWidget()
             : const Text(
                 'Log In',
@@ -383,18 +436,23 @@ const SizedBox(height: 16),
   }
 
   void _handleLogin() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      await Future.delayed(const Duration(seconds: 1));
+      await authService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       setState(() {
         _isLoading = false;
       });
 
-      if (mounted) {
+      if (authService.isAuthenticated && mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
     }

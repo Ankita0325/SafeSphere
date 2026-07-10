@@ -11,3 +11,55 @@
 2026-07-11 00:42:14,457 - app.services.ai_service - INFO - AI Service initialized successfully
 2026-07-11 00:42:14,467 - app.services.ai_service - INFO - AI Service initialized successfully
 2026-07-11 00:42:14,487 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:08:18,911 - app.services.firebase_service - WARNING - Firebase credentials not found at firebase/serviceAccountKey.json. Running in SQLite Mock mode.
+2026-07-11 04:08:18,926 - app.services.firebase_service - INFO - Local SQLite database initialized successfully for Mock mode
+2026-07-11 04:08:18,976 - app.routes.emergency - INFO - Firebase service initialized successfully
+2026-07-11 04:08:18,976 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:08:18,976 - app.routes.emergency - INFO - SMS service initialized successfully
+2026-07-11 04:08:18,978 - app.routes.emergency - INFO - Route service initialized successfully
+2026-07-11 04:08:18,978 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:18,979 - app.routes.emergency - INFO - AI service initialized successfully
+2026-07-11 04:08:19,016 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:19,051 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:19,065 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:19,080 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:19,091 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:08:35,086 - app.services.firebase_service - WARNING - Firebase credentials not found at firebase/serviceAccountKey.json. Running in SQLite Mock mode.
+2026-07-11 04:08:35,088 - app.services.firebase_service - INFO - Local SQLite database initialized successfully for Mock mode
+2026-07-11 04:08:35,101 - app.routes.emergency - INFO - Firebase service initialized successfully
+2026-07-11 04:08:35,101 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:08:35,101 - app.routes.emergency - INFO - SMS service initialized successfully
+2026-07-11 04:08:35,101 - app.routes.emergency - INFO - Route service initialized successfully
+2026-07-11 04:08:35,101 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:35,101 - app.routes.emergency - INFO - AI service initialized successfully
+2026-07-11 04:08:35,115 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:35,204 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:35,280 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:35,326 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:08:35,342 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:10:03,413 - app.services.firebase_service - WARNING - Firebase credentials not found at firebase/serviceAccountKey.json. Running in SQLite Mock mode.
+2026-07-11 04:10:03,434 - app.services.firebase_service - INFO - Local SQLite database initialized successfully for Mock mode
+2026-07-11 04:10:03,470 - app.routes.emergency - INFO - Firebase service initialized successfully
+2026-07-11 04:10:03,470 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:10:03,470 - app.routes.emergency - INFO - SMS service initialized successfully
+2026-07-11 04:10:03,470 - app.routes.emergency - INFO - Route service initialized successfully
+2026-07-11 04:10:03,470 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:03,472 - app.routes.emergency - INFO - AI service initialized successfully
+2026-07-11 04:10:03,507 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:03,533 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:03,540 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:03,548 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:03,567 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:10:38,831 - app.services.firebase_service - WARNING - Firebase credentials not found at firebase/serviceAccountKey.json. Running in SQLite Mock mode.
+2026-07-11 04:10:38,849 - app.services.firebase_service - INFO - Local SQLite database initialized successfully for Mock mode
+2026-07-11 04:10:38,897 - app.routes.emergency - INFO - Firebase service initialized successfully
+2026-07-11 04:10:38,897 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.
+2026-07-11 04:10:38,897 - app.routes.emergency - INFO - SMS service initialized successfully
+2026-07-11 04:10:38,899 - app.routes.emergency - INFO - Route service initialized successfully
+2026-07-11 04:10:38,899 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:38,899 - app.routes.emergency - INFO - AI service initialized successfully
+2026-07-11 04:10:38,934 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:38,966 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:38,980 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:38,987 - app.services.ai_service - INFO - AI Service initialized successfully
+2026-07-11 04:10:38,997 - app.services.sms_service - WARNING - Twilio credentials are not configured. SMS delivery will be logged only.

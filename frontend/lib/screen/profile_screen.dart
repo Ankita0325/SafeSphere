@@ -385,9 +385,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ============== MY PROFILE DIALOG (FIXED) ==============
   void _showMyProfileDialog(BuildContext context) {
-    final nameController = TextEditingController(text: 'Riya Sharma');
-    final phoneController = TextEditingController(text: '+91 98765 43210');
-    final emailController = TextEditingController(text: 'riya@email.com');
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
+    final nameController = TextEditingController(text: user?.name ?? '');
+    final phoneController = TextEditingController(text: user?.phone ?? '');
+    final emailController = TextEditingController(text: user?.email ?? '');
 
     showDialog(
       context: context,
@@ -539,14 +541,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profile updated successfully!'),
-                  backgroundColor: Colors.green,
-                ),
+            onPressed: () async {
+              final authService = Provider.of<AuthService>(context, listen: false);
+              await authService.updateUserProfile(
+                name: nameController.text.trim(),
+                email: emailController.text.trim(),
+                phone: phoneController.text.trim(),
               );
+              Navigator.pop(context);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile updated successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6E3FB0),

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
@@ -6,10 +8,12 @@ import '../utils/constants.dart';
 
 class AuthService extends ChangeNotifier {
   final ApiService _apiService = ApiService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
-  bool _useMockBackend = true; // Set to false when backend is ready
+  bool _useMockBackend = true; // Use Mock Backend by default so the app is immediately testable without configuration
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -32,7 +36,8 @@ class AuthService extends ChangeNotifier {
   Future<void> _init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(AppConstants.PREF_AUTH_TOKEN);
+      _useMockBackend = prefs.getBool('use_mock_backend') ?? true;
+      final firebaseUser = _auth.currentUser;
 
       if (_useMockBackend) {
         // Check if user is already logged in from shared preferences
@@ -63,8 +68,7 @@ class AuthService extends ChangeNotifier {
             );
           }
         }
-      } else if (token != null && token.isNotEmpty) {
-        await _apiService.setAuthToken(token);
+      } else if (firebaseUser != null) {
         await _loadUser();
       }
     } catch (e) {
@@ -77,12 +81,47 @@ class AuthService extends ChangeNotifier {
 
   Future<void> _loadUser() async {
     try {
-      final response = await _apiService.get('${AppConstants.API_AUTH}/me');
-      _currentUser = UserModel.fromJson(response);
+      final firebaseUser = _auth.currentUser;
+      if (firebaseUser == null) {
+        _currentUser = null;
+        return;
+      }
+
+      final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        _currentUser = UserModel.fromJson({
+          'uid': firebaseUser.uid,
+          'email': firebaseUser.email ?? '',
+          'name': data['name'] ?? firebaseUser.displayName ?? '',
+          'phone': data['phone'] ?? data['phone_number'] ?? '',
+          'role': data['role'] ?? 'user',
+          'emergency_contacts': data['emergency_contacts'] ?? [],
+          'created_at': data['created_at'] ?? DateTime.now().toIso8601String(),
+          'updated_at': data['updated_at'] ?? DateTime.now().toIso8601String(),
+          'is_verified': firebaseUser.emailVerified,
+          'signup_date': data['signup_date'] ?? data['created_at'],
+          'sos_trigger_count': data['sos_trigger_count'] ?? 0,
+        });
+      } else {
+        _currentUser = UserModel(
+          uid: firebaseUser.uid,
+          email: firebaseUser.email ?? '',
+          name: firebaseUser.displayName ?? '',
+          phone: '',
+          role: 'user',
+          emergencyContacts: [],
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isVerified: firebaseUser.emailVerified,
+          signupDate: DateTime.now(),
+        );
+        await _firestore.collection('users').doc(firebaseUser.uid).set(_currentUser!.toJson());
+      }
+
       notifyListeners();
     } catch (e) {
       print('Error loading user: $e');
-      // If token is invalid, clear it
       if (e.toString().contains('401') || e.toString().contains('403')) {
         await logout();
       }
@@ -167,44 +206,66 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      // Real backend registration
-      final response = await _apiService.post(
-        '${AppConstants.API_AUTH}/register',
-        body: {
-          'email': email,
-          'password': password,
-          'name': name,
-          'phone': phone,
-        },
+      // Firebase registration
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      if (response.containsKey('token') && response['token'] != null) {
-        await _apiService.setAuthToken(response['token']);
-      }
+      await credential.user?.updateDisplayName(name);
+      await credential.user?.reload();
 
-      if (response.containsKey('user')) {
-        _currentUser = UserModel.fromJson(response['user']);
-      } else {
-        _currentUser = UserModel.fromJson(response);
-      }
+      _currentUser = UserModel(
+        uid: credential.user?.uid ?? '',
+        email: credential.user?.email ?? email,
+        name: name,
+        phone: phone,
+        role: 'user',
+        emergencyContacts: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isVerified: credential.user?.emailVerified ?? false,
+        signupDate: DateTime.now(),
+      );
 
-      notifyListeners();
+      await _firestore.collection('users').doc(_currentUser!.uid).set({
+        'email': _currentUser!.email,
+        'name': _currentUser!.name,
+        'phone': _currentUser!.phone,
+        'role': _currentUser!.role,
+        'emergency_contacts': [],
+        'created_at': _currentUser!.createdAt.toIso8601String(),
+        'updated_at': _currentUser!.updatedAt.toIso8601String(),
+        'is_verified': _currentUser!.isVerified,
+        'signup_date': _currentUser!.signupDate?.toIso8601String(),
+        'sos_trigger_count': _currentUser!.sosTriggerCount,
+      });
 
       final prefs = await SharedPreferences.getInstance();
-      if (response.containsKey('token') && response['token'] != null) {
-        await prefs.setString(AppConstants.PREF_AUTH_TOKEN, response['token']);
-      }
-      if (_currentUser != null) {
-        await prefs.setString(AppConstants.PREF_USER_ID, _currentUser!.uid);
-        await prefs.setString(AppConstants.PREF_USER_NAME, _currentUser!.name);
-        await prefs.setString(
-            AppConstants.PREF_USER_EMAIL, _currentUser!.email);
-        await prefs.setString(
-            AppConstants.PREF_USER_PHONE, _currentUser!.phone);
-        await prefs.setBool(AppConstants.PREF_IS_LOGGED_IN, true);
-      }
+      await prefs.setString(AppConstants.PREF_USER_ID, _currentUser!.uid);
+      await prefs.setString(AppConstants.PREF_USER_NAME, _currentUser!.name);
+      await prefs.setString(AppConstants.PREF_USER_EMAIL, _currentUser!.email);
+      await prefs.setString(AppConstants.PREF_USER_PHONE, _currentUser!.phone);
+      await prefs.setBool(AppConstants.PREF_IS_LOGGED_IN, true);
 
+      notifyListeners();
       print('✅ Registration successful for: $email');
+    } on FirebaseAuthException catch (e) {
+      if (e.message != null && e.message!.contains('CONFIGURATION_NOT_FOUND')) {
+        print('⚠️ Firebase not configured. Falling back to Mock Backend.');
+        await toggleBackendMode(true);
+        return register(
+          email: email,
+          password: password,
+          name: name,
+          phone: phone,
+        );
+      }
+      _error = _firebaseAuthErrorMessage(e);
+      print('❌ Registration error: ${e.code} - ${e.message}');
+    } on FirebaseException catch (e) {
+      _error = e.message ?? 'Firebase error occurred. Please try again.';
+      print('❌ Firebase registration error: ${e.code} - ${e.message}');
     } catch (e) {
       _error = _extractErrorMessage(e);
       print('❌ Registration error: $e');
@@ -325,39 +386,44 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      // Real backend login
-      final response = await _apiService.post(
-        '${AppConstants.API_AUTH}/login',
-        body: {'email': email, 'password': password},
+      // Firebase login
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      if (response.containsKey('token') && response['token'] != null) {
-        await _apiService.setAuthToken(response['token']);
+      final firebaseUser = credential.user;
+      if (firebaseUser == null) {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+          message: 'Failed to sign in. Please try again.',
+        );
       }
 
-      if (response.containsKey('user')) {
-        _currentUser = UserModel.fromJson(response['user']);
-      } else {
-        _currentUser = UserModel.fromJson(response);
-      }
-
-      notifyListeners();
+      await _loadUser();
 
       final prefs = await SharedPreferences.getInstance();
-      if (response.containsKey('token') && response['token'] != null) {
-        await prefs.setString(AppConstants.PREF_AUTH_TOKEN, response['token']);
-      }
       if (_currentUser != null) {
         await prefs.setString(AppConstants.PREF_USER_ID, _currentUser!.uid);
         await prefs.setString(AppConstants.PREF_USER_NAME, _currentUser!.name);
-        await prefs.setString(
-            AppConstants.PREF_USER_EMAIL, _currentUser!.email);
-        await prefs.setString(
-            AppConstants.PREF_USER_PHONE, _currentUser!.phone);
+        await prefs.setString(AppConstants.PREF_USER_EMAIL, _currentUser!.email);
+        await prefs.setString(AppConstants.PREF_USER_PHONE, _currentUser!.phone);
         await prefs.setBool(AppConstants.PREF_IS_LOGGED_IN, true);
       }
 
+      notifyListeners();
       print('✅ Login successful for: $email');
+    } on FirebaseAuthException catch (e) {
+      if (e.message != null && e.message!.contains('CONFIGURATION_NOT_FOUND')) {
+        print('⚠️ Firebase not configured. Falling back to Mock Backend.');
+        await toggleBackendMode(true);
+        return login(email: email, password: password);
+      }
+      _error = _firebaseAuthErrorMessage(e);
+      print('❌ Login error: ${e.code} - ${e.message}');
+    } on FirebaseException catch (e) {
+      _error = e.message ?? 'Firebase error occurred. Please try again.';
+      print('❌ Firebase login error: ${e.code} - ${e.message}');
     } catch (e) {
       _error = _extractErrorMessage(e);
       print('❌ Login error: $e');
@@ -391,8 +457,8 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      // Real backend logout
-      await _apiService.clearAuthToken();
+      // Firebase logout
+      await _auth.signOut();
       _currentUser = null;
 
       final prefs = await SharedPreferences.getInstance();
@@ -413,8 +479,10 @@ class AuthService extends ChangeNotifier {
   }
 
   // Helper method to switch between mock and real backend
-  void toggleBackendMode(bool useMock) {
+  Future<void> toggleBackendMode(bool useMock) async {
     _useMockBackend = useMock;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('use_mock_backend', useMock);
     notifyListeners();
     print('🔄 Backend mode switched to: ${useMock ? "Mock" : "Real"}');
   }
@@ -500,18 +568,43 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      // Real backend add contact
-      final response = await _apiService.post(
-        '${AppConstants.API_EMERGENCY}/contacts',
-        body: {
-          'name': name,
-          'phone': phone,
-          'relation': relation,
-          'is_primary': isPrimary,
-        },
+      // Firebase add emergency contact
+      final firebaseUser = _auth.currentUser;
+      if (firebaseUser == null) {
+        _error = 'Not authenticated';
+        return;
+      }
+
+      final updatedContacts = List<Map<String, dynamic>>.from(
+          _currentUser?.emergencyContacts.map((e) => e.toJson()).toList() ?? []);
+      if (isPrimary) {
+        for (var contact in updatedContacts) {
+          contact['is_primary'] = false;
+        }
+      }
+      updatedContacts.add(newContact.toJson());
+
+      await _firestore.collection('users').doc(firebaseUser.uid).set({
+        'emergency_contacts': updatedContacts,
+        'updated_at': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
+
+      _currentUser = UserModel(
+        uid: _currentUser!.uid,
+        email: _currentUser!.email,
+        name: _currentUser!.name,
+        phone: _currentUser!.phone,
+        role: _currentUser!.role,
+        emergencyContacts: updatedContacts
+            .map((contact) => EmergencyContact.fromJson(contact))
+            .toList(),
+        createdAt: _currentUser!.createdAt,
+        updatedAt: DateTime.now(),
+        isVerified: _currentUser!.isVerified,
+        signupDate: _currentUser!.signupDate,
+        sosTriggerCount: _currentUser!.sosTriggerCount,
       );
 
-      _currentUser = UserModel.fromJson(response);
       notifyListeners();
       print('✅ Emergency contact added: $name');
     } catch (e) {
@@ -556,12 +649,39 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      // Real backend remove contact
-      final response = await _apiService.delete(
-        '${AppConstants.API_EMERGENCY}/contacts/$phone',
+      // Firebase remove emergency contact
+      final firebaseUser = _auth.currentUser;
+      if (firebaseUser == null) {
+        _error = 'Not authenticated';
+        return;
+      }
+
+      final updatedContacts = _currentUser!.emergencyContacts
+          .where((contact) => contact.phone != phone)
+          .map((contact) => contact.toJson())
+          .toList();
+
+      await _firestore.collection('users').doc(firebaseUser.uid).set({
+        'emergency_contacts': updatedContacts,
+        'updated_at': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
+
+      _currentUser = UserModel(
+        uid: _currentUser!.uid,
+        email: _currentUser!.email,
+        name: _currentUser!.name,
+        phone: _currentUser!.phone,
+        role: _currentUser!.role,
+        emergencyContacts: updatedContacts
+            .map((contact) => EmergencyContact.fromJson(contact))
+            .toList(),
+        createdAt: _currentUser!.createdAt,
+        updatedAt: DateTime.now(),
+        isVerified: _currentUser!.isVerified,
+        signupDate: _currentUser!.signupDate,
+        sosTriggerCount: _currentUser!.sosTriggerCount,
       );
 
-      _currentUser = UserModel.fromJson(response);
       notifyListeners();
       print('✅ Emergency contact removed: $phone');
     } catch (e) {
@@ -618,17 +738,42 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      // Real backend update
-      final response = await _apiService.put(
-        '${AppConstants.API_AUTH}/profile',
-        body: {
-          if (name != null) 'name': name,
-          if (email != null) 'email': email,
-          if (phone != null) 'phone': phone,
-        },
-      );
+      // Firebase profile update
+      final firebaseUser = _auth.currentUser;
+      if (firebaseUser == null) {
+        _error = 'Not authenticated';
+        return;
+      }
 
-      _currentUser = UserModel.fromJson(response);
+      final updatedData = <String, dynamic>{
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (phone != null) 'phone': phone,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (name != null && name.isNotEmpty) {
+        await firebaseUser.updateDisplayName(name);
+      }
+      if (email != null && email.isNotEmpty && email != firebaseUser.email) {
+        await firebaseUser.updateEmail(email);
+      }
+
+      await _firestore.collection('users').doc(firebaseUser.uid).set(updatedData, SetOptions(merge: true));
+
+      _currentUser = UserModel(
+        uid: _currentUser!.uid,
+        email: email ?? _currentUser!.email,
+        name: name ?? _currentUser!.name,
+        phone: phone ?? _currentUser!.phone,
+        role: _currentUser!.role,
+        emergencyContacts: _currentUser!.emergencyContacts,
+        createdAt: _currentUser!.createdAt,
+        updatedAt: DateTime.now(),
+        isVerified: firebaseUser.emailVerified,
+        signupDate: _currentUser!.signupDate,
+        sosTriggerCount: _currentUser!.sosTriggerCount,
+      );
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(AppConstants.PREF_USER_NAME, _currentUser!.name);
@@ -652,6 +797,8 @@ class AuthService extends ChangeNotifier {
 
     if (errorString.contains('SocketException')) {
       return 'Unable to connect to server. Please check your internet connection.';
+    } else if (errorString.contains('FirebaseAuthException')) {
+      return 'Authentication failed. Please verify your credentials and try again.';
     } else if (errorString.contains('401')) {
       return 'Invalid email or password. Please try again.';
     } else if (errorString.contains('403')) {
@@ -664,6 +811,8 @@ class AuthService extends ChangeNotifier {
       return 'Server error. Please try again later.';
     } else if (errorString.contains('timeout')) {
       return 'Connection timeout. Please check your internet connection.';
+    } else if (errorString.contains('FirebaseException')) {
+      return 'Firebase connection error. Please try again.';
     }
 
     // If error contains 'message' field in JSON
@@ -680,6 +829,34 @@ class AuthService extends ChangeNotifier {
     }
 
     return 'An unexpected error occurred. Please try again.';
+  }
+
+  String _firebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return 'The email address is invalid. Please check and try again.';
+      case 'user-disabled':
+        return 'This account has been disabled. Please contact support.';
+      case 'user-not-found':
+        return 'No account found with this email. Please sign up first.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'email-already-in-use':
+        return 'This email is already registered. Please use another email or login.';
+      case 'weak-password':
+        return 'Password is too weak. Please choose a stronger password.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection and try again.';
+      case 'too-many-requests':
+        return 'Too many login attempts. Please wait a few minutes and try again.';
+      case 'operation-not-allowed':
+        return 'Email/password sign-in is not enabled. Please contact support.';
+      default:
+        if (e.message != null && e.message!.contains('CONFIGURATION_NOT_FOUND')) {
+          return 'Firebase Auth is not configured. Please enable Email/Password Sign-in in your Firebase Console, or toggle "Demo Mode" at the top-right of the screen.';
+        }
+        return e.message ?? 'Authentication failed. Please try again.';
+    }
   }
 
   @override
